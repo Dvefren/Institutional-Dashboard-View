@@ -1,0 +1,33 @@
+## .NET / Visual Studio
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+*.DotSettings.user
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+
+## NuGet
+**/packages/*
+*.nupkg
+**/[Pp]ackages/
+project.lock.json
+
+## User secrets
+appsettings.Development.json
+
+## Publish output
+publish/
+
+## OS files
+.DS_Store
+Thumbs.db

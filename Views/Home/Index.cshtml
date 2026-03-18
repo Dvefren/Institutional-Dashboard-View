@@ -1,0 +1,343 @@
+﻿@model UTTN.Dashboard.ViewModels.Dashboard.RectorateViewModel
+@{
+    ViewData["Title"] = "Rectoría — Visión General";
+    var totalGender = Model.MaleCount + Model.FemaleCount + Model.OtherGenderCount;
+    var malePerc = totalGender > 0 ? Math.Round((decimal)Model.MaleCount / totalGender * 100, 1) : 0;
+    var femalePerc = totalGender > 0 ? Math.Round((decimal)Model.FemaleCount / totalGender * 100, 1) : 0;
+}
+
+<style>
+    .chart-container {
+        position: relative;
+        width: 100%;
+        height: 280px;
+    }
+
+    .chart-container-sm {
+        position: relative;
+        width: 200px;
+        height: 200px;
+    }
+</style>
+
+@if (ViewBag.Error != null)
+{
+    <div style="background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); border-radius: 8px; padding: 16px; margin-bottom: 24px; color: var(--danger); font-size: 13px;">
+        <strong>Error de conexión:</strong> @ViewBag.Error
+    </div>
+}
+
+<!-- Header -->
+<div style="margin-bottom: 32px;">
+    <p style="color: var(--text-secondary); font-size: 14px;">
+        Indicadores clave de rendimiento institucional en tiempo real.
+    </p>
+</div>
+
+<!-- KPI Cards Row 1 -->
+<div class="stat-grid" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="stat-card" style="border-left: 3px solid var(--accent);">
+        <div class="label">Estudiantes registrados</div>
+        <div class="value" style="color: var(--accent);">@Model.TotalStudents</div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+            @Model.ActiveStudents inscritos · @Model.Preinscritos preinscritos
+        </div>
+    </div>
+    <div class="stat-card" style="border-left: 3px solid var(--success);">
+        <div class="label">Carreras activas</div>
+        <div class="value" style="color: var(--success);">@Model.TotalCareers</div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+            @Model.TotalGroups grupos registrados
+        </div>
+    </div>
+    <div class="stat-card" style="border-left: 3px solid #a78bfa;">
+        <div class="label">Docentes</div>
+        <div class="value" style="color: #a78bfa;">@Model.TotalTeachers</div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+            Personal activo
+        </div>
+    </div>
+    <div class="stat-card" style="border-left: 3px solid var(--warning);">
+        <div class="label">Trámites pendientes</div>
+        <div class="value" style="color: var(--warning);">@Model.TotalTramitesPendientes</div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+            @Model.TotalVisitasMedicas consultas médicas totales
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+
+    <!-- Students by Career (Bar Chart) -->
+    <div class="card">
+        <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Estudiantes por Carrera</div>
+        @if (Model.StudentsByCareers.Any())
+        {
+            <div class="chart-container">
+                <canvas id="chartStudentsByCareers"></canvas>
+            </div>
+        }
+        else
+        {
+            <p style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 40px 0;">Sin datos disponibles</p>
+        }
+    </div>
+
+    <!-- Gender Distribution (Donut) -->
+    <div class="card">
+        <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Distribución por Género</div>
+        @if (totalGender > 0)
+        {
+            <div style="display: flex; align-items: center; gap: 32px;">
+                <div class="chart-container-sm">
+                    <canvas id="chartGender"></canvas>
+                </div>
+                <div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <span style="width: 12px; height: 12px; border-radius: 3px; background: #4f6ef7; display: inline-block;"></span>
+                        <span style="font-size: 13px; color: var(--text-secondary);">Masculino — @Model.MaleCount (@malePerc%)</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <span style="width: 12px; height: 12px; border-radius: 3px; background: #a78bfa; display: inline-block;"></span>
+                        <span style="font-size: 13px; color: var(--text-secondary);">Femenino — @Model.FemaleCount (@femalePerc%)</span>
+                    </div>
+                    @if (Model.OtherGenderCount > 0)
+                    {
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="width: 12px; height: 12px; border-radius: 3px; background: #555; display: inline-block;"></span>
+                            <span style="font-size: 13px; color: var(--text-secondary);">Otro — @Model.OtherGenderCount</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <p style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 40px 0;">Sin datos de género disponibles</p>
+        }
+    </div>
+</div>
+
+<!-- Second Charts Row -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+
+    <!-- Preinscripciones by Status (Donut) -->
+    <div class="card">
+        <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Preinscripciones por Estatus</div>
+        @if (Model.PreinscripcionesByStatus.Any())
+        {
+            <div class="chart-container">
+                <canvas id="chartPreStatus"></canvas>
+            </div>
+        }
+        else
+        {
+            <p style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 40px 0;">Sin preinscripciones registradas</p>
+        }
+    </div>
+
+    <!-- Monthly Trend (Line) -->
+    <div class="card">
+        <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Tendencia de Preinscripciones</div>
+        @if (Model.MonthlyPreinscripciones.Any())
+        {
+            <div class="chart-container">
+                <canvas id="chartMonthly"></canvas>
+            </div>
+        }
+        else
+        {
+            <p style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 40px 0;">Sin datos de tendencia</p>
+        }
+    </div>
+</div>
+
+<!-- Student Status Breakdown -->
+@if (Model.StudentsByStatus.Any())
+{
+    <div class="card" style="margin-bottom: 24px;">
+        <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Estudiantes por Estatus</div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            @foreach (var status in Model.StudentsByStatus)
+            {
+                var color = status.Status switch
+                {
+                                "INSCRITO" => "var(--success)",
+                                "PREINSCRITO" => "var(--warning)",
+                                "BAJA" => "var(--danger)",
+                    _ => "var(--accent)"
+                };
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 16px 24px; text-align: center; min-width: 140px;">
+                    <div style="font-size: 24px; font-weight: 700; color: @color;">@status.Count</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">@status.Status</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">@status.Percentage%</div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<!-- Groups Table -->
+@if (Model.GroupsOverview.Any())
+{
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div style="font-size: 14px; font-weight: 600;">Grupos — Distribución de Estudiantes</div>
+            <div style="font-size: 12px; color: var(--text-muted);">@Model.GroupsOverview.Count grupos</div>
+        </div>
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <th style="text-align: left; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">Grupo</th>
+                        <th style="text-align: left; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">Carrera</th>
+                        <th style="text-align: left; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">Turno</th>
+                        <th style="text-align: right; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">Estudiantes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var group in Model.GroupsOverview)
+                    {
+                        var badgeColor = group.StudentCount > 20 ? "var(--success)" :
+                        group.StudentCount > 10 ? "var(--warning)" : "var(--danger)";
+                        <tr style="border-bottom: 1px solid var(--border);">
+                            <td style="padding: 12px;">
+                                <span style="background: var(--accent-glow); color: var(--accent); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 12px;">@group.GroupCode</span>
+                            </td>
+                            <td style="padding: 12px; color: var(--text-secondary);">@group.CareerName</td>
+                            <td style="padding: 12px; color: var(--text-muted);">@group.Shift</td>
+                            <td style="padding: 12px; text-align: right;">
+                                <span style="background: rgba(255,255,255,0.05); color: @badgeColor; padding: 4px 12px; border-radius: 6px; font-weight: 600; font-size: 12px;">@group.StudentCount</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        Chart.defaults.color = '#8a9e95';
+        Chart.defaults.borderColor = 'rgba(0,0,0,0.06)';
+        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+        Chart.defaults.font.size = 12;
+
+        // ─── Students by Career (Horizontal Bar) ───
+        @if (Model.StudentsByCareers.Any())
+        {
+                <text>
+                new Chart(document.getElementById('chartStudentsByCareers'), {
+                    type: 'bar',
+                    data: {
+                        labels: [@Html.Raw(string.Join(",", Model.StudentsByCareers.Select(c => $"'{c.CareerName}'")))],
+                        datasets: [{
+                            data: [@string.Join(",", Model.StudentsByCareers.Select(c => c.Count))],
+                            backgroundColor: ['#4f6ef7','#34d399','#a78bfa','#fbbf24','#f87171','#38bdf8','#fb923c','#e879f9','#818cf8','#6ee7b7'],
+                            borderRadius: 6,
+                            borderSkipped: false,
+                            maxBarThickness: 40
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { precision: 0 } },
+                            y: { grid: { display: false } }
+                        }
+                    }
+                });
+                </text>
+        }
+
+        // ─── Gender Donut ───
+        @if (totalGender > 0)
+        {
+                <text>
+                new Chart(document.getElementById('chartGender'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Masculino', 'Femenino'@(Model.OtherGenderCount > 0 ? ", 'Otro'" : "")],
+                        datasets: [{
+                            data: [@Model.MaleCount, @Model.FemaleCount@(Model.OtherGenderCount > 0 ? $", {Model.OtherGenderCount}" : "")],
+                            backgroundColor: ['#4f6ef7', '#a78bfa'@(Model.OtherGenderCount > 0 ? ", '#555'" : "")],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        cutout: '65%',
+                        plugins: { legend: { display: false } }
+                    }
+                });
+                </text>
+        }
+
+        // ─── Preinscripciones by Status (Donut) ───
+        @if (Model.PreinscripcionesByStatus.Any())
+        {
+                <text>
+                new Chart(document.getElementById('chartPreStatus'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: [@Html.Raw(string.Join(",", Model.PreinscripcionesByStatus.Select(s => $"'{s.Status}'")))],
+                        datasets: [{
+                            data: [@string.Join(",", Model.PreinscripcionesByStatus.Select(s => s.Count))],
+                            backgroundColor: ['#34d399','#fbbf24','#f87171','#4f6ef7','#a78bfa','#38bdf8'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '60%',
+                        plugins: {
+                            legend: { position: 'right', labels: { padding: 16, usePointStyle: true, pointStyle: 'rectRounded' } }
+                        }
+                    }
+                });
+                </text>
+        }
+
+        // ─── Monthly Trend (Line) ───
+        @if (Model.MonthlyPreinscripciones.Any())
+        {
+                <text>
+                new Chart(document.getElementById('chartMonthly'), {
+                    type: 'line',
+                    data: {
+                        labels: [@Html.Raw(string.Join(",", Model.MonthlyPreinscripciones.Select(m => $"'{m.Month} {m.Year}'")))],
+                        datasets: [{
+                            label: 'Preinscripciones',
+                            data: [@string.Join(",", Model.MonthlyPreinscripciones.Select(m => m.Count))],
+                            borderColor: '#4f6ef7',
+                            backgroundColor: 'rgba(79, 110, 247, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#4f6ef7',
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false } },
+                                y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { precision: 0 } }
+                        }
+                    }
+                });
+                </text>
+        }
+    </script>
+}

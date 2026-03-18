@@ -1,0 +1,207 @@
+﻿@model Dictionary<string, object>
+@{
+    ViewData["Title"] = "Diagnóstico de Base de Datos";
+}
+
+<style>
+    .diag-section {
+        margin-bottom: 32px;
+    }
+
+        .diag-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--accent);
+        }
+
+    .diag-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        font-family: monospace;
+    }
+
+        .diag-table th {
+            text-align: left;
+            padding: 8px 12px;
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .diag-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+    .count-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    .count-zero {
+        background: rgba(239,68,68,0.08);
+        color: var(--danger);
+    }
+
+    .count-low {
+        background: rgba(245,158,11,0.08);
+        color: var(--warning);
+    }
+
+    .count-good {
+        background: rgba(16,185,129,0.08);
+        color: var(--success);
+    }
+
+    .count-error {
+        background: rgba(239,68,68,0.08);
+        color: var(--danger);
+    }
+</style>
+
+@if (ViewBag.Error != null)
+{
+    <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 16px; margin-bottom: 24px; color: var(--danger); font-size: 13px;">
+        <strong>Error:</strong> @ViewBag.Error
+    </div>
+}
+
+<div style="margin-bottom: 32px;">
+    <p style="color: var(--text-secondary); font-size: 14px;">
+        Vista de diagnóstico — conteo de filas y datos de ejemplo de cada tabla.
+    </p>
+</div>
+
+@if (Model.ContainsKey("counts"))
+{
+    <div class="card diag-section">
+        <h3>Conteo de Filas por Tabla</h3>
+        <table class="diag-table">
+            <thead>
+                <tr>
+                    <th>Tabla</th>
+                    <th style="text-align: right;">Filas</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var kvp in (Dictionary<string, int>)Model["counts"])
+                {
+                    var cssClass = kvp.Value == -1 ? "count-error" : kvp.Value == 0 ? "count-zero" : kvp.Value < 5 ? "count-low" : "count-good";
+                    var label = kvp.Value == -1 ? "ERROR" : kvp.Value.ToString();
+                    <tr>
+                        <td style="font-weight: 600;">@kvp.Key</td>
+                        <td style="text-align: right;">
+                            <span class="count-badge @cssClass">@label</span>
+                        </td>
+                        <td>
+                            @if (kvp.Value == -1)
+                            {
+                                <span style="color: var(--danger);">No existe o error</span>
+                            }
+                            else if (kvp.Value == 0)
+                            {
+
+                                <span style="color: var(--danger);">Vacía</span>
+                            }
+                            else if (kvp.Value < 5)
+                            {
+
+                                <span style="color: var(--warning);">Pocos datos</span>
+                            }
+                            else
+                            {
+
+                                <span style="color: var(--success);">Con datos</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@{
+    var sections = new (string key, string title)[]
+    {
+        ("careers", "Carreras (Top 5)"),
+        ("groups", "Grupos (Top 5)"),
+        ("students", "Estudiantes (Top 5)"),
+        ("teachers", "Docentes (Top 5)"),
+        ("persons", "Personas (Top 5)"),
+        ("preinscripciones", "Preinscripciones (Top 5)"),
+        ("inscripciones", "Inscripciones (Top 5)"),
+        ("tramite_categorias", "Categorías de Trámites"),
+        ("tramite_solicitudes", "Solicitudes de Trámites (Top 5)"),
+        ("visitas", "Visitas Médicas (Top 5)"),
+        ("salud", "Preinscripción Salud (Top 5)"),
+        ("career_history", "Historial Cambio Carrera (Top 5)"),
+        ("group_history", "Historial Cambio Grupo (Top 5)"),
+        ("student_statuses", "Estudiantes por Estatus"),
+        ("preinscripcion_statuses", "Preinscripciones por Estatus"),
+        ("inscripcion_statuses", "Inscripciones por Estatus"),
+        ("tramite_statuses", "Trámites por Estatus"),
+        ("diagnosticos", "Top 15 Diagnósticos Médicos"),
+    };
+}
+
+@foreach (var (key, title) in sections)
+{
+    if (Model.ContainsKey(key))
+    {
+        var data = Model[key] as IList<dynamic>;
+        if (data != null && data.Count > 0)
+        {
+            <div class="card diag-section">
+                <h3>@title</h3>
+                <div style="overflow-x: auto;">
+                    <table class="diag-table">
+                        <thead>
+                            <tr>
+                                @foreach (var col in (IDictionary<string, object>)data[0])
+                                {
+                                    <th>@col.Key</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in data)
+                            {
+                                <tr>
+                                    @foreach (var col in (IDictionary<string, object>)row)
+                                    {
+                                        <td title="@col.Value">@col.Value</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card diag-section">
+                <h3>@title</h3>
+                <p style="color: var(--text-muted); font-size: 13px;">Sin datos</p>
+            </div>
+        }
+    }
+}
+
+Navigate to `/Diagnostic` to view this page. It runs about 25 queries to give you a full X-ray of your database. Once you see what has data and what's empty, tell me what catches your eye and we'll build dashboards around it.
