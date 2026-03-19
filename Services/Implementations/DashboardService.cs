@@ -190,7 +190,37 @@ namespace UTTN.Dashboard.Services.Implementations
                          MONTH(FechaPreinscripcion)
                 ORDER BY YEAR(FechaPreinscripcion), MONTH(FechaPreinscripcion)")).ToList();
 
-            return vm;
+            // ═══════════════════════════════════════
+            // CAREERS OVERVIEW (aggregated stats)
+            // ═══════════════════════════════════════
+            vm.CareersOverview = (await connection.QueryAsync<CareerOverviewItem>(@"
+                SELECT 
+                    c.management_career_Name AS CareerName,
+                    c.management_career_Code AS CareerCode,
+                    COUNT(s.management_student_ID) AS TotalStudents,
+                    SUM(CASE WHEN s.management_student_StatusCode = 'INSCRITO' THEN 1 ELSE 0 END) AS Inscritos,
+                    SUM(CASE WHEN s.management_student_StatusCode = 'PREINSCRITO' THEN 1 ELSE 0 END) AS Preinscritos,
+                    SUM(CASE WHEN s.management_student_StatusCode = 'BAJA' THEN 1 ELSE 0 END) AS Bajas,
+                    COUNT(DISTINCT s.management_student_GroupID) AS Groups,
+                    CAST(0 AS DECIMAL(5,1)) AS Percentage
+                FROM management_career_table c
+                LEFT JOIN management_student_table s 
+                    ON c.management_career_ID = s.management_student_CareerID 
+                    AND s.management_student_status = 1
+                WHERE c.management_career_status = 1
+                GROUP BY c.management_career_Name, c.management_career_Code
+                ORDER BY TotalStudents DESC")).ToList();
+
+                    var totalCareerStudents = vm.CareersOverview.Sum(x => x.TotalStudents);
+                    foreach (var c in vm.CareersOverview)
+                    {
+                        c.Percentage = totalCareerStudents > 0
+                            ? Math.Round((decimal)c.TotalStudents / totalCareerStudents * 100, 1)
+                            : 0;
+                    }
+
+                    return vm;
+
         }
 
         public async Task<AdmissionsViewModel> GetAdmissionsDataAsync()

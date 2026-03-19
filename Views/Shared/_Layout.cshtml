@@ -8,6 +8,10 @@
     var initials = User.Identity?.IsAuthenticated == true
         ? string.Join("", fullName.Split(' ').Where(w => w.Length > 0).Take(2).Select(w => w[0])).ToUpper()
         : "DV";
+
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    string IsActive(string controller) => currentController.Equals(controller, StringComparison.OrdinalIgnoreCase) ? "active" : "";
 }
 
 <!DOCTYPE html>
@@ -25,24 +29,37 @@
         }
 
         :root {
-            --sidebar-w: 260px;
-            --header-h: 64px;
-            --bg-body: #f5f7f6;
+            --sidebar-w: 250px;
+            --header-h: 56px;
+            --bg-body: #f4f6f5;
             --bg-sidebar: #0d9e7a;
+            --bg-sidebar-dark: #0a8566;
             --bg-card: #ffffff;
             --bg-input: #f0f2f1;
-            --border: #e2e8e5;
+            --border: #e4e8e6;
+            --border-light: #eef1ef;
             --text-primary: #1a2b25;
             --text-secondary: #4a6358;
             --text-muted: #8a9e95;
             --accent: #0d9e7a;
+            --accent-light: #e8f5f0;
             --accent-hover: #0bb88d;
-            --accent-glow: rgba(13, 158, 122, 0.08);
             --success: #10b981;
+            --success-light: #ecfdf5;
             --warning: #f59e0b;
+            --warning-light: #fffbeb;
             --danger: #ef4444;
-            --radius: 12px;
-            --radius-sm: 8px;
+            --danger-light: #fef2f2;
+            --info: #3b82f6;
+            --info-light: #eff6ff;
+            --purple: #8b5cf6;
+            --purple-light: #f5f3ff;
+            --pink: #ec4899;
+            --pink-light: #fdf2f8;
+            --radius: 10px;
+            --radius-sm: 6px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
         }
 
         body {
@@ -51,12 +68,13 @@
             color: var(--text-primary);
             display: flex;
             min-height: 100vh;
+            font-size: 14px;
         }
 
         /* ─── Sidebar ─── */
         .sidebar {
             width: var(--sidebar-w);
-            background: linear-gradient(180deg, #0d9e7a 0%, #0a8566 100%);
+            background: linear-gradient(180deg, var(--bg-sidebar) 0%, var(--bg-sidebar-dark) 100%);
             display: flex;
             flex-direction: column;
             position: fixed;
@@ -67,18 +85,18 @@
         }
 
         .sidebar-brand {
-            padding: 24px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.15);
+            padding: 20px 18px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.12);
         }
 
         .sidebar-brand-icon {
-            width: 36px;
-            height: 36px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 10px;
+            width: 34px;
+            height: 34px;
+            background: rgba(255,255,255,0.18);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -86,66 +104,74 @@
         }
 
             .sidebar-brand-icon svg {
-                width: 18px;
-                height: 18px;
+                width: 17px;
+                height: 17px;
                 fill: white;
             }
 
         .sidebar-brand-text {
-            font-size: 15px;
-            font-weight: 600;
-            letter-spacing: -0.01em;
+            font-size: 14px;
+            font-weight: 700;
             color: white;
+            letter-spacing: -0.01em;
+        }
+
+        .sidebar-brand-sub {
+            font-size: 10px;
+            color: rgba(255,255,255,0.55);
+            font-weight: 400;
+            display: block;
+            margin-top: 1px;
         }
 
         .sidebar-nav {
             flex: 1;
-            padding: 16px 12px;
+            padding: 14px 10px;
             overflow-y: auto;
         }
 
         .nav-section {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .nav-section-title {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
-            color: rgba(255,255,255,0.5);
+            color: rgba(255,255,255,0.4);
             text-transform: uppercase;
-            letter-spacing: 0.06em;
-            padding: 0 12px;
-            margin-bottom: 8px;
+            letter-spacing: 0.08em;
+            padding: 0 10px;
+            margin-bottom: 6px;
         }
 
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
+            gap: 9px;
+            padding: 9px 10px;
             border-radius: var(--radius-sm);
-            color: rgba(255,255,255,0.75);
+            color: rgba(255,255,255,0.7);
             text-decoration: none;
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: 450;
             transition: all 0.15s;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
 
             .nav-item:hover {
-                background: rgba(255,255,255,0.12);
+                background: rgba(255,255,255,0.1);
                 color: white;
             }
 
             .nav-item.active {
-                background: rgba(255,255,255,0.2);
+                background: rgba(255,255,255,0.18);
                 color: white;
                 font-weight: 600;
             }
 
             .nav-item svg {
-                width: 18px;
-                height: 18px;
+                width: 17px;
+                height: 17px;
                 stroke: currentColor;
                 fill: none;
                 stroke-width: 1.8;
@@ -155,25 +181,25 @@
             }
 
         .sidebar-footer {
-            padding: 16px;
-            border-top: 1px solid rgba(255,255,255,0.15);
+            padding: 14px;
+            border-top: 1px solid rgba(255,255,255,0.12);
         }
 
         .user-card {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 9px;
         }
 
         .user-avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
-            background: rgba(255,255,255,0.2);
+            width: 32px;
+            height: 32px;
+            border-radius: 7px;
+            background: rgba(255,255,255,0.18);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             color: white;
             flex-shrink: 0;
@@ -185,7 +211,7 @@
         }
 
         .user-name {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             color: white;
             white-space: nowrap;
@@ -194,34 +220,34 @@
         }
 
         .user-role {
-            font-size: 11px;
-            color: rgba(255,255,255,0.6);
+            font-size: 10px;
+            color: rgba(255,255,255,0.5);
         }
 
         .btn-logout {
             background: none;
             border: none;
             cursor: pointer;
-            padding: 6px;
-            border-radius: 6px;
+            padding: 5px;
+            border-radius: 5px;
             transition: background 0.15s;
         }
 
             .btn-logout:hover {
-                background: rgba(255,255,255,0.15);
+                background: rgba(255,255,255,0.12);
             }
 
             .btn-logout svg {
-                width: 18px;
-                height: 18px;
-                stroke: rgba(255,255,255,0.8);
+                width: 16px;
+                height: 16px;
+                stroke: rgba(255,255,255,0.7);
                 fill: none;
                 stroke-width: 1.8;
                 stroke-linecap: round;
                 stroke-linejoin: round;
             }
 
-        /* ─── Main content ─── */
+        /* ─── Main ─── */
         .main {
             flex: 1;
             margin-left: var(--sidebar-w);
@@ -230,115 +256,332 @@
 
         .main-header {
             height: var(--header-h);
-            padding: 0 32px;
+            padding: 0 28px;
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
             position: sticky;
             top: 0;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(10px);
             z-index: 50;
         }
 
             .main-header h2 {
-                font-size: 17px;
+                font-size: 15px;
                 font-weight: 600;
+                color: var(--text-primary);
                 letter-spacing: -0.01em;
             }
 
         .main-content {
-            padding: 32px;
+            padding: 24px 28px;
         }
 
-        /* ─── Utility classes ─── */
+        /* ─── Components ─── */
         .card {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 24px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
         }
 
         .stat-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
         }
 
         .stat-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            padding: 16px 18px;
+            box-shadow: var(--shadow-sm);
+            border-left: 3px solid var(--accent);
         }
 
             .stat-card .label {
-                font-size: 12px;
+                font-size: 11px;
                 color: var(--text-muted);
                 text-transform: uppercase;
                 letter-spacing: 0.04em;
-                margin-bottom: 8px;
+                font-weight: 500;
+                margin-bottom: 6px;
             }
 
             .stat-card .value {
-                font-size: 28px;
+                font-size: 26px;
                 font-weight: 700;
                 letter-spacing: -0.02em;
+                line-height: 1;
             }
+
+            .stat-card .sub {
+                font-size: 11px;
+                color: var(--text-muted);
+                margin-top: 4px;
+            }
+
+        /* Table styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+            .data-table thead th {
+                text-align: left;
+                padding: 10px 12px;
+                background: var(--accent);
+                color: white;
+                font-weight: 600;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+            }
+
+                .data-table thead th:first-child {
+                    border-radius: var(--radius-sm) 0 0 0;
+                }
+
+                .data-table thead th:last-child {
+                    border-radius: 0 var(--radius-sm) 0 0;
+                }
+
+            .data-table tbody td {
+                padding: 10px 12px;
+                border-bottom: 1px solid var(--border-light);
+                color: var(--text-secondary);
+            }
+
+            .data-table tbody tr:hover {
+                background: var(--accent-light);
+            }
+
+            .data-table tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 36px;
+            text-align: center;
+        }
+
+        .badge-success {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .badge-info {
+            background: var(--info-light);
+            color: var(--info);
+        }
+
+        .badge-accent {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .badge-purple {
+            background: var(--purple-light);
+            color: var(--purple);
+        }
+
+        .badge-pink {
+            background: var(--pink-light);
+            color: var(--pink);
+        }
+
+        .badge-neutral {
+            background: var(--bg-input);
+            color: var(--text-secondary);
+        }
+
+        /* Chart container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 280px;
+        }
+
+        .chart-container-sm {
+            position: relative;
+            width: 180px;
+            height: 180px;
+        }
+
+        /* Grid helpers */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .grid-5 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+
+        /* Section header like Tutorias */
+        .section-header {
+            background: var(--accent);
+            color: white;
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .section-header svg {
+                width: 16px;
+                height: 16px;
+                stroke: currentColor;
+                fill: none;
+                stroke-width: 2;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+            }
+
+        /* Export button style */
+        .btn-export {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+
+            .btn-export:hover {
+                background: #059669;
+            }
+
+        /* Page description */
+        .page-desc {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        /* No data placeholder */
+        .no-data {
+            color: var(--text-muted);
+            font-size: 13px;
+            text-align: center;
+            padding: 40px 0;
+        }
     </style>
     @RenderSection("Styles", required: false)
 </head>
 <body>
-    <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-brand">
             <div class="sidebar-brand-icon">
                 <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></svg>
             </div>
-            <span class="sidebar-brand-text">UTTN Dashboard</span>
+            <div>
+                <span class="sidebar-brand-text">UTTN Dashboard</span>
+                <span class="sidebar-brand-sub">Sistema Estratégico Institucional</span>
+            </div>
         </div>
 
         <nav class="sidebar-nav">
             <div class="nav-section">
                 <div class="nav-section-title">General</div>
-                <a href="@Url.Action("Index", "Home")" class="nav-item active">
+                <a href="@Url.Action("Index", "Home")" class="nav-item @IsActive("Home")">
                     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
-                    Panel Principal
+                    Rectoría
                 </a>
             </div>
 
             <div class="nav-section">
-                <div class="nav-section-title">Gestión</div>
-                <a href="#" class="nav-item">
-                    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-                    Usuarios
+                <div class="nav-section-title">Gestión Escolar</div>
+                <a href="@Url.Action("Index", "Admissions")" class="nav-item @IsActive("Admissions")">
+                    <svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><rect x="8" y="2" width="8" height="4" rx="1" /></svg>
+                    Inscripciones
                 </a>
-                <a href="#" class="nav-item">
-                    <svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>
-                    Carreras
-                </a>
-                <a href="#" class="nav-item">
-                    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
-                    Estudiantes
+                <a href="@Url.Action("Index", "Tramites")" class="nav-item @IsActive("Tramites")">
+                    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                    Trámites
                 </a>
             </div>
 
             <div class="nav-section">
                 <div class="nav-section-title">Servicios</div>
-                <a href="@Url.Action("Index", "Tramites")" class="nav-item">
-                    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                    Trámites
-                </a>
                 <a href="#" class="nav-item">
                     <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
                     Servicios Médicos
                 </a>
-                <a href="@Url.Action("Index", "Admissions")" class="nav-item">
-                    <svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><rect x="8" y="2" width="8" height="4" rx="1" /></svg>
-                    Inscripciones
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Sistema</div>
+                <a href="@Url.Action("Index", "Diagnostic")" class="nav-item @IsActive("Diagnostic")">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+                    Diagnóstico BD
                 </a>
             </div>
         </nav>
@@ -363,12 +606,10 @@
         </div>
     </aside>
 
-    <!-- Main -->
     <main class="main">
         <header class="main-header">
             <h2>@(ViewData["Title"] ?? "Dashboard")</h2>
         </header>
-
         <div class="main-content">
             @RenderBody()
         </div>

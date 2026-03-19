@@ -35,6 +35,8 @@
 
         // Monthly trends (preinscriptions)
         public List<MonthlyStatItem> MonthlyPreinscripciones { get; set; } = new();
+
+        public List<CareerOverviewItem> CareersOverview { get; set; } = new();
     }
 
     public class CareerStatItem
@@ -65,5 +67,16 @@
         public string Month { get; set; } = string.Empty;
         public int Year { get; set; }
         public int Count { get; set; }
+    }
+    public class CareerOverviewItem
+    {
+        public string CareerName { get; set; } = string.Empty;
+        public string CareerCode { get; set; } = string.Empty;
+        public int TotalStudents { get; set; }
+        public int Inscritos { get; set; }
+        public int Preinscritos { get; set; }
+        public int Bajas { get; set; }
+        public int Groups { get; set; }
+        public decimal Percentage { get; set; }
     }
 }

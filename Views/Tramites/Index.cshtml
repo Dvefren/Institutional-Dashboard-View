@@ -1,41 +1,144 @@
 ﻿@model UTTN.Dashboard.ViewModels.Dashboard.TramitesViewModel
 @{
-    ViewData["Title"] = "Trámites — Eficiencia de Servicio";
+    ViewData["Title"] = "Control de Trámites y Ventanilla";
     var totalDocs = Model.DocsAprobados + Model.DocsPendientes + Model.DocsRechazados;
+    var docsAprobPerc = totalDocs > 0 ? Math.Round((decimal)Model.DocsAprobados / totalDocs * 100, 0) : 0;
+    var docsPendPerc = totalDocs > 0 ? Math.Round((decimal)Model.DocsPendientes / totalDocs * 100, 0) : 0;
+    var docsRechPerc = totalDocs > 0 ? Math.Round((decimal)Model.DocsRechazados / totalDocs * 100, 0) : 0;
 }
 
 <style>
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .kpi-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow-sm);
+    }
+
+        .kpi-card .kpi-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .kpi-card .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: -0.02em;
+        }
+
+        .kpi-card .kpi-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .kpi-card .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+            .kpi-card .kpi-icon svg {
+                width: 24px;
+                height: 24px;
+                stroke-width: 1.8;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+                fill: none;
+            }
+
+    .section-title {
+        font-size: 15px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--text-primary);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .section-title svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--accent);
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .section-title.danger svg {
+            stroke: var(--danger);
+        }
+
+    .chart-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .chart-row-equal {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .chart-box {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 22px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .chart-box-title {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--text-primary);
+        margin-bottom: 18px;
+    }
+
     .chart-container {
+        position: relative;
+        width: 100%;
+        height: 300px;
+    }
+
+    .chart-container-donut {
         position: relative;
         width: 100%;
         height: 280px;
     }
 
-    .chart-container-sm {
-        position: relative;
-        width: 200px;
-        height: 200px;
-    }
-
-    .badge-status {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 6px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-
-    .alert-row {
-        border-left: 3px solid var(--danger);
-    }
-
-    .warning-row {
-        border-left: 3px solid var(--warning);
-    }
-
     .tipo-bar {
-        height: 8px;
-        border-radius: 4px;
+        height: 10px;
+        border-radius: 5px;
         display: flex;
         overflow: hidden;
         background: var(--bg-input);
@@ -45,171 +148,288 @@
         height: 100%;
         transition: width 0.3s;
     }
+
+    .filter-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .filter-row select {
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            color: var(--text-primary);
+            background: var(--bg-card);
+            cursor: pointer;
+            outline: none;
+        }
+
+        .filter-row .filter-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+    .record-count {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+    }
 </style>
 
 @if (ViewBag.Error != null)
 {
-    <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 16px; margin-bottom: 24px; color: var(--danger); font-size: 13px;">
+    <div style="background: var(--danger-light); border: 1px solid rgba(239,68,68,0.2); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 20px; color: var(--danger); font-size: 13px;">
         <strong>Error de conexión:</strong> @ViewBag.Error
     </div>
 }
 
-<div style="margin-bottom: 32px;">
-    <p style="color: var(--text-secondary); font-size: 14px;">
-        Monitoreo de solicitudes, tiempos de respuesta y cuellos de botella.
-    </p>
-</div>
-
 <!-- KPI Cards -->
-<div class="stat-grid" style="grid-template-columns: repeat(5, 1fr);">
-    <div class="stat-card" style="border-left: 3px solid var(--accent);">
-        <div class="label">Total solicitudes</div>
-        <div class="value" style="color: var(--accent); font-size: 28px;">@Model.TotalSolicitudes</div>
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-info">
+            <div class="kpi-label">Solicitudes Totales</div>
+            <div class="kpi-value" style="color: var(--accent);">@Model.TotalSolicitudes</div>
+        </div>
+        <div class="kpi-icon" style="background: var(--accent-light);">
+            <svg viewBox="0 0 24 24" stroke="var(--accent)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+        </div>
     </div>
-    <div class="stat-card" style="border-left: 3px solid var(--warning);">
-        <div class="label">Pendientes</div>
-        <div class="value" style="color: var(--warning); font-size: 28px;">@Model.Pendientes</div>
+    <div class="kpi-card">
+        <div class="kpi-info">
+            <div class="kpi-label">Trámites en Proceso</div>
+            <div class="kpi-value" style="color: var(--warning);">@Model.Pendientes</div>
+        </div>
+        <div class="kpi-icon" style="background: var(--warning-light);">
+            <svg viewBox="0 0 24 24" stroke="var(--warning)"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+        </div>
     </div>
-    <div class="stat-card" style="border-left: 3px solid var(--success);">
-        <div class="label">Completadas</div>
-        <div class="value" style="color: var(--success); font-size: 28px;">@Model.Completadas</div>
+    <div class="kpi-card">
+        <div class="kpi-info">
+            <div class="kpi-label">Tiempo Promedio</div>
+            <div class="kpi-value" style="color: var(--purple);">@Model.PromedioResolucionDias</div>
+            <div class="kpi-sub">Días</div>
+        </div>
+        <div class="kpi-icon" style="background: var(--purple-light);">
+            <svg viewBox="0 0 24 24" stroke="var(--purple)"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+        </div>
     </div>
-    <div class="stat-card" style="border-left: 3px solid var(--danger);">
-        <div class="label">Rechazadas</div>
-        <div class="value" style="color: var(--danger); font-size: 28px;">@Model.Rechazadas</div>
-    </div>
-    <div class="stat-card" style="border-left: 3px solid #a78bfa;">
-        <div class="label">Tasa de completado</div>
-        <div class="value" style="color: #a78bfa; font-size: 28px;">@Model.TasaCompletado%</div>
-        <div style="font-size: 11px; color: var(--text-muted);">~@Model.PromedioResolucionDias días promedio</div>
+    <div class="kpi-card">
+        <div class="kpi-info">
+            <div class="kpi-label">Tasa de Completado</div>
+            <div class="kpi-value" style="color: var(--success);">@Model.TasaCompletado%</div>
+            <div style="width: 100%; height: 8px; background: var(--bg-input); border-radius: 4px; overflow: hidden; margin-top: 8px;">
+                <div style="height: 100%; width: @Model.TasaCompletado%; background: var(--success); border-radius: 4px;"></div>
+            </div>
+        </div>
+        <div class="kpi-icon" style="background: var(--success-light);">
+            <svg viewBox="0 0 24 24" stroke="var(--success)"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
+        </div>
     </div>
 </div>
 
-<!-- Charts Row 1: Status + By Type -->
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
-    <div class="card">
-        <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Solicitudes por Estatus</div>
+<!-- Volume by Type (bar) + Semáforo de Entregas (donut) -->
+<div class="chart-row">
+    <div class="chart-box">
+        <div class="chart-box-title">Volumen por Tipo de Trámite</div>
+        @if (Model.ByTipoTramite.Any())
+        {
+            <div class="chart-container"><canvas id="chartVolume"></canvas></div>
+        }
+        else
+        {
+            <p class="no-data">Sin datos</p>
+        }
+    </div>
+    <div class="chart-box">
+        <div class="chart-box-title">Semáforo de Entregas</div>
         @if (Model.ByStatus.Any())
         {
-            <div class="chart-container">
-                <canvas id="chartStatus"></canvas>
-            </div>
+            <div class="chart-container-donut"><canvas id="chartSemaforo"></canvas></div>
         }
         else
         {
-            <p style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 40px 0;">Sin datos</p>
-        }
-    </div>
-
-    <div class="card">
-        <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Documentos — Validación</div>
-        @if (totalDocs > 0)
-        {
-            <div style="display: flex; align-items: center; gap: 32px;">
-                <div class="chart-container-sm">
-                    <canvas id="chartDocs"></canvas>
-                </div>
-                <div>
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                        <span style="width: 12px; height: 12px; border-radius: 3px; background: var(--success); display: inline-block;"></span>
-                        <span style="font-size: 13px; color: var(--text-secondary);">Aprobados — @Model.DocsAprobados</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                        <span style="width: 12px; height: 12px; border-radius: 3px; background: var(--warning); display: inline-block;"></span>
-                        <span style="font-size: 13px; color: var(--text-secondary);">Pendientes — @Model.DocsPendientes</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="width: 12px; height: 12px; border-radius: 3px; background: var(--danger); display: inline-block;"></span>
-                        <span style="font-size: 13px; color: var(--text-secondary);">Rechazados — @Model.DocsRechazados</span>
-                    </div>
-                </div>
-            </div>
-        }
-        else
-        {
-            <p style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 40px 0;">Sin documentos registrados</p>
+            <p class="no-data">Sin datos</p>
         }
     </div>
 </div>
 
-<!-- By Type Breakdown -->
+<!-- Status breakdown pills -->
+<div class="section-title">
+    <svg viewBox="0 0 24 24"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" /></svg>
+    Resumen por Estatus
+</div>
+<div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px;">
+    @foreach (var status in Model.ByStatus)
+    {
+        var color = status.Status switch
+        {
+                    "Completado" or "Completada" or "Aprobado" => "var(--success)",
+                    "Pendiente" => "var(--warning)",
+                    "En Revisión" => "var(--info)",
+                    "Rechazado" or "Rechazada" => "var(--danger)",
+            _ => "var(--accent)"
+        };
+        var bg = status.Status switch
+        {
+                    "Completado" or "Completada" or "Aprobado" => "var(--success-light)",
+                    "Pendiente" => "var(--warning-light)",
+                    "En Revisión" => "var(--info-light)",
+                    "Rechazado" or "Rechazada" => "var(--danger-light)",
+            _ => "var(--accent-light)"
+        };
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 28px; text-align: center; box-shadow: var(--shadow-sm); min-width: 120px;">
+            <div style="font-size: 28px; font-weight: 700; color: @color; line-height: 1;">@status.Count</div>
+            <div style="margin-top: 6px;"><span class="badge" style="background: @bg; color: @color;">@status.Status</span></div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">@status.Percentage%</div>
+        </div>
+    }
+</div>
+
+<!-- Document validation + Monthly trend -->
+<div class="chart-row-equal">
+    <div class="chart-box">
+        <div class="chart-box-title">Validación de Documentos</div>
+        @if (totalDocs > 0)
+        {
+            <div style="display: flex; align-items: center; gap: 28px;">
+                <div style="position: relative; width: 180px; height: 180px; flex-shrink: 0;">
+                    <canvas id="chartDocs"></canvas>
+                </div>
+                <div style="flex: 1;">
+                    <div style="margin-bottom: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary);">
+                                <span style="width: 10px; height: 10px; border-radius: 3px; background: var(--success); display: inline-block;"></span>
+                                Aprobados
+                            </span>
+                            <strong style="color: var(--success);">@Model.DocsAprobados</strong>
+                        </div>
+                        <div style="width: 100%; height: 6px; background: var(--bg-input); border-radius: 3px; overflow: hidden;">
+                            <div style="height: 100%; width: @docsAprobPerc%; background: var(--success); border-radius: 3px;"></div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary);">
+                                <span style="width: 10px; height: 10px; border-radius: 3px; background: var(--warning); display: inline-block;"></span>
+                                Pendientes
+                            </span>
+                            <strong style="color: var(--warning);">@Model.DocsPendientes</strong>
+                        </div>
+                        <div style="width: 100%; height: 6px; background: var(--bg-input); border-radius: 3px; overflow: hidden;">
+                            <div style="height: 100%; width: @docsPendPerc%; background: var(--warning); border-radius: 3px;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary);">
+                                <span style="width: 10px; height: 10px; border-radius: 3px; background: var(--danger); display: inline-block;"></span>
+                                Rechazados
+                            </span>
+                            <strong style="color: var(--danger);">@Model.DocsRechazados</strong>
+                        </div>
+                        <div style="width: 100%; height: 6px; background: var(--bg-input); border-radius: 3px; overflow: hidden;">
+                            <div style="height: 100%; width: @docsRechPerc%; background: var(--danger); border-radius: 3px;"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted);">
+                        Total: <strong style="color: var(--text-primary);">@totalDocs</strong> documentos
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p class="no-data">Sin documentos registrados</p>
+        }
+    </div>
+    <div class="chart-box">
+        <div class="chart-box-title">Tendencia Mensual de Solicitudes</div>
+        @if (Model.MonthlyTrend.Any())
+        {
+            <div class="chart-container"><canvas id="chartMonthly"></canvas></div>
+        }
+        else
+        {
+            <p class="no-data">Sin datos</p>
+        }
+    </div>
+</div>
+
+<!-- Desglose por tipo -->
 @if (Model.ByTipoTramite.Any())
 {
-    <div class="card" style="margin-bottom: 24px;">
-        <div style="font-size: 14px; font-weight: 600; margin-bottom: 20px;">Desglose por Tipo de Trámite</div>
+    <div class="section-title">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+        Desglose por Tipo de Trámite
+    </div>
+    <div class="chart-box" style="margin-bottom: 24px;">
         @foreach (var tipo in Model.ByTipoTramite)
         {
-            var pPend = tipo.Total > 0 ? Math.Round((decimal)tipo.Pendientes / tipo.Total * 100, 0) : 0;
             var pComp = tipo.Total > 0 ? Math.Round((decimal)tipo.Completadas / tipo.Total * 100, 0) : 0;
+            var pPend = tipo.Total > 0 ? Math.Round((decimal)tipo.Pendientes / tipo.Total * 100, 0) : 0;
             var pRech = tipo.Total > 0 ? Math.Round((decimal)tipo.Rechazadas / tipo.Total * 100, 0) : 0;
             <div style="margin-bottom: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <span style="font-size: 13px; font-weight: 500;">@tipo.TipoNombre</span>
-                    <span style="font-size: 12px; color: var(--text-muted);">@tipo.Total solicitudes</span>
+                    <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">@tipo.TipoNombre</span>
+                    <span class="badge badge-neutral">@tipo.Total solicitudes</span>
                 </div>
                 <div class="tipo-bar">
                     <div class="tipo-bar-seg" style="width: @(pComp)%; background: var(--success);" title="Completadas: @tipo.Completadas"></div>
                     <div class="tipo-bar-seg" style="width: @(pPend)%; background: var(--warning);" title="Pendientes: @tipo.Pendientes"></div>
                     <div class="tipo-bar-seg" style="width: @(pRech)%; background: var(--danger);" title="Rechazadas: @tipo.Rechazadas"></div>
                 </div>
-                <div style="display: flex; gap: 16px; margin-top: 4px;">
-                    <span style="font-size: 11px; color: var(--success);">@tipo.Completadas completadas</span>
-                    <span style="font-size: 11px; color: var(--warning);">@tipo.Pendientes pendientes</span>
-                    <span style="font-size: 11px; color: var(--danger);">@tipo.Rechazadas rechazadas</span>
+                <div style="display: flex; gap: 20px; margin-top: 5px;">
+                    <span style="font-size: 11px; display: flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 2px; background: var(--success); display: inline-block;"></span> <span style="color: var(--success);">@tipo.Completadas completadas</span></span>
+                    <span style="font-size: 11px; display: flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 2px; background: var(--warning); display: inline-block;"></span> <span style="color: var(--warning);">@tipo.Pendientes pendientes</span></span>
+                    <span style="font-size: 11px; display: flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 2px; background: var(--danger); display: inline-block;"></span> <span style="color: var(--danger);">@tipo.Rechazadas rechazadas</span></span>
                 </div>
             </div>
         }
     </div>
 }
 
-<!-- Monthly Trend -->
-<div class="card" style="margin-bottom: 24px;">
-    <div style="font-size: 14px; font-weight: 600; margin-bottom: 16px;">Tendencia Mensual de Solicitudes</div>
-    @if (Model.MonthlyTrend.Any())
-    {
-        <div class="chart-container">
-            <canvas id="chartMonthly"></canvas>
-        </div>
-    }
-    else
-    {
-        <p style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 40px 0;">Sin datos de tendencia</p>
-    }
-</div>
-
-<!-- Bottleneck: Oldest Pending -->
+<!-- Bottleneck Alert -->
 @if (Model.OldestPending.Any())
 {
-    <div class="card" style="margin-bottom: 24px; border-left: 3px solid var(--danger);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <div>
-                <div style="font-size: 14px; font-weight: 600; color: var(--danger);">Alerta — Solicitudes con Mayor Antigüedad</div>
-                <div style="font-size: 12px; color: var(--text-muted);">Pendientes que requieren atención inmediata</div>
-            </div>
-        </div>
+    <div class="section-title danger">
+        <svg viewBox="0 0 24 24" style="stroke: var(--danger);"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+        <span style="color: var(--danger);">Alerta — Solicitudes con Mayor Antigüedad</span>
+    </div>
+    <div class="chart-box" style="margin-bottom: 24px; border-left: 3px solid var(--danger);">
+        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Pendientes que requieren atención inmediata</div>
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <table class="data-table" id="tblPending">
                 <thead>
-                    <tr style="border-bottom: 1px solid var(--border);">
-                        <th style="text-align: left; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">ID</th>
-                        <th style="text-align: left; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">Alumno</th>
-                        <th style="text-align: left; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">Trámite</th>
-                        <th style="text-align: left; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">Fecha</th>
-                        <th style="text-align: right; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">Días pendiente</th>
+                    <tr>
+                        <th>ID</th>
+                        <th>Alumno (Matrícula)</th>
+                        <th>Tipo de Trámite</th>
+                        <th>Fecha Solicitud</th>
+                        <th style="text-align: center;">Estatus / Vencimiento</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model.OldestPending)
                     {
-                        var urgency = item.DiasTranscurridos > 30 ? "var(--danger)" :
-                        item.DiasTranscurridos > 15 ? "var(--warning)" : "var(--text-secondary)";
-                        <tr style="border-bottom: 1px solid var(--border);">
-                            <td style="padding: 12px; font-family: monospace; font-size: 12px; color: var(--text-muted);">#@item.Id</td>
-                            <td style="padding: 12px;">@item.Nombre</td>
-                            <td style="padding: 12px; color: var(--text-secondary);">@item.TipoTramite</td>
-                            <td style="padding: 12px; color: var(--text-muted); font-size: 12px;">@item.Fecha.ToString("dd/MM/yyyy")</td>
-                            <td style="padding: 12px; text-align: right;">
-                                <span style="background: rgba(239,68,68,0.08); color: @urgency; padding: 4px 12px; border-radius: 6px; font-weight: 700; font-size: 13px;">@item.DiasTranscurridos días</span>
+                        var urgencyClass = item.DiasTranscurridos > 30 ? "badge-danger" :
+                        item.DiasTranscurridos > 15 ? "badge-warning" : "badge-success";
+                        var urgencyLabel = item.DiasTranscurridos > 30 ? "Retrasado" :
+                        item.DiasTranscurridos > 15 ? "Por Vencer" : "A Tiempo";
+                        <tr>
+                            <td style="font-weight: 600; color: var(--accent);">TRM-@item.Id</td>
+                            <td style="font-weight: 500; color: var(--text-primary);">@item.Nombre</td>
+                            <td><strong>@item.TipoTramite</strong></td>
+                            <td style="font-size: 12px; color: var(--text-muted);">@item.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td style="text-align: center;">
+                                <span class="badge @urgencyClass">@urgencyLabel (@item.DiasTranscurridos días)</span>
                             </td>
                         </tr>
                     }
@@ -222,47 +442,63 @@
 <!-- Recent Solicitudes -->
 @if (Model.RecentSolicitudes.Any())
 {
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <div style="font-size: 14px; font-weight: 600;">Últimas Solicitudes</div>
-            <div style="font-size: 12px; color: var(--text-muted);">Últimos 50 registros</div>
+    <div class="section-title">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" /></svg>
+        Bandeja de Solicitudes Recientes
+    </div>
+    <div class="chart-box">
+        <div class="filter-row">
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <span class="filter-label">Buscar:</span>
+                <input type="text" placeholder="Buscar alumno o trámite..." onkeyup="filterTable(this, 'tblSolicitudes')" style="padding: 8px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 13px; color: var(--text-primary); background: var(--bg-card); outline: none; min-width: 240px;">
+                <select onchange="filterTableByColumn(this.value, 'tblSolicitudes', 4)">
+                    <option value="">Todos los estatus</option>
+                    @foreach (var s in Model.ByStatus)
+                    {
+                        <option value="@s.Status">@s.Status</option>
+                    }
+                </select>
+            </div>
+            <button class="btn-export" onclick="exportTableToCSV('tblSolicitudes', 'reporte_ventanilla.csv')">
+                <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                Descargar Reporte de Ventanilla
+            </button>
         </div>
+        <div class="record-count" id="tblSolicitudesCount">Mostrando 1 a @Model.RecentSolicitudes.Count de @Model.RecentSolicitudes.Count registros</div>
         <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <table class="data-table" id="tblSolicitudes">
                 <thead>
-                    <tr style="border-bottom: 1px solid var(--border);">
-                        <th style="text-align: left; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">ID</th>
-                        <th style="text-align: left; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">Alumno</th>
-                        <th style="text-align: left; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">Matrícula</th>
-                        <th style="text-align: left; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">Trámite</th>
-                        <th style="text-align: center; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">Estatus</th>
-                        <th style="text-align: right; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">Fecha</th>
-                        <th style="text-align: right; padding: 10px 12px; color: var(--text-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;">Días</th>
+                    <tr>
+                        <th>Folio Solicitud</th>
+                        <th>Alumno (Matrícula)</th>
+                        <th>Tipo de Trámite</th>
+                        <th>Fecha Solicitud</th>
+                        <th style="text-align: center;">Estatus / Vencimiento</th>
+                        <th style="text-align: right;">Días</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model.RecentSolicitudes)
                     {
-                        var statusStyle = item.Estatus switch
+                        var statusClass = item.Estatus switch
                         {
-                                        "Completado" or "Completada" or "Aprobado" or "Aprobada" or "Entregado" or "Entregada"
-                => "background: rgba(16,185,129,0.08); color: var(--success);",
-                                        "Pendiente"
-                => "background: rgba(245,158,11,0.08); color: var(--warning);",
-                                        "Rechazado" or "Rechazada"
-                => "background: rgba(239,68,68,0.08); color: var(--danger);",
-                            _ => "background: rgba(13,158,122,0.08); color: var(--accent);"
+                                        "Completado" or "Completada" or "Aprobado" or "Aprobada" or "Entregado" => "badge-success",
+                                        "Pendiente" => "badge-warning",
+                                        "En Revisión" => "badge-info",
+                                        "Rechazado" or "Rechazada" => "badge-danger",
+                            _ => "badge-accent"
                         };
-                        <tr style="border-bottom: 1px solid var(--border);">
-                            <td style="padding: 12px; font-family: monospace; font-size: 12px; color: var(--text-muted);">#@item.Id</td>
-                            <td style="padding: 12px;">@item.Nombre</td>
-                            <td style="padding: 12px; color: var(--text-muted); font-size: 12px;">@item.Matricula</td>
-                            <td style="padding: 12px; color: var(--text-secondary);">@item.TipoTramite</td>
-                            <td style="padding: 12px; text-align: center;">
-                                <span class="badge-status" style="@statusStyle">@item.Estatus</span>
-                            </td>
-                            <td style="padding: 12px; text-align: right; color: var(--text-muted); font-size: 12px;">@item.Fecha.ToString("dd/MM/yyyy")</td>
-                            <td style="padding: 12px; text-align: right; font-weight: 600; font-size: 12px; color: var(--text-secondary);">@item.DiasTranscurridos</td>
+                        var statusLabel = item.Estatus;
+                        if (item.Estatus == "Completado") statusLabel = "Completado";
+                        else if (item.Estatus == "Pendiente" && item.DiasTranscurridos > 15) statusLabel = "Por Vencer (" + item.DiasTranscurridos + " días)";
+                        else if (item.Estatus == "Pendiente") statusLabel = "A Tiempo (Faltan " + (30 - item.DiasTranscurridos) + " días)";
+                        <tr>
+                            <td style="font-weight: 600; color: var(--accent);">TRM-@item.Id</td>
+                            <td style="font-weight: 500; color: var(--text-primary);">@item.Nombre<br><span style="font-size: 11px; color: var(--text-muted); font-weight: 400;">@item.Matricula</span></td>
+                            <td><strong>@item.TipoTramite</strong></td>
+                            <td style="font-size: 12px; color: var(--text-muted);">@item.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td style="text-align: center;"><span class="badge @statusClass">@statusLabel</span></td>
+                            <td style="text-align: right; font-weight: 600; font-size: 12px; color: var(--text-secondary);">@item.DiasTranscurridos</td>
                         </tr>
                     }
                 </tbody>
@@ -273,35 +509,66 @@
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <script>
+        Chart.register(ChartDataLabels);
         Chart.defaults.color = '#8a9e95';
         Chart.defaults.borderColor = 'rgba(0,0,0,0.06)';
         Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
         Chart.defaults.font.size = 12;
 
-        @if (Model.ByStatus.Any())
+        var dlBar = { anchor: 'end', align: 'top', color: '#1a2b25', font: { weight: '700', size: 13 }, offset: 2 };
+        var dlDonut = { color: '#fff', font: { weight: '700', size: 14 }, formatter: function(v,ctx) { var t=ctx.dataset.data.reduce(function(a,b){return a+b},0); var p=t>0?Math.round(v/t*100):0; return p>5?p+'%':''; } };
+
+        // Volume by type
+        @if (Model.ByTipoTramite.Any())
         {
                 <text>
-                new Chart(document.getElementById('chartStatus'), {
-                    type: 'doughnut',
+                new Chart(document.getElementById('chartVolume'), {
+                    type: 'bar',
                     data: {
-                        labels: [@Html.Raw(string.Join(",", Model.ByStatus.Select(s => $"'{s.Status}'")))],
+                        labels: [@Html.Raw(string.Join(",", Model.ByTipoTramite.Select(t => $"'{t.TipoNombre}'")))],
                         datasets: [{
-                            data: [@string.Join(",", Model.ByStatus.Select(s => s.Count))],
-                            backgroundColor: ['#f59e0b','#10b981','#ef4444','#0d9e7a','#a78bfa','#38bdf8'],
-                            borderWidth: 0
+                            data: [@string.Join(",", Model.ByTipoTramite.Select(t => t.Total))],
+                            backgroundColor: '#22c3a6',
+                            borderRadius: 4, borderSkipped: false, maxBarThickness: 50
                         }]
                     },
                     options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '60%',
-                        plugins: { legend: { position: 'right', labels: { padding: 16, usePointStyle: true, pointStyle: 'rectRounded' } } }
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, datalabels: dlBar },
+                        scales: { x: { grid: { display: false }, ticks: { font: { size: 11 }, maxRotation: 45 } }, y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { precision: 0 } } }
                     }
                 });
                 </text>
         }
 
+        // Semáforo donut
+        @if (Model.ByStatus.Any())
+        {
+                <text>
+                new Chart(document.getElementById('chartSemaforo'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: [@Html.Raw(string.Join(",", Model.ByStatus.Select(s => $"'{s.Status}'")))],
+                        datasets: [{
+                            data: [@string.Join(",", Model.ByStatus.Select(s => s.Count))],
+                            backgroundColor: ['#10b981','#f59e0b','#3b82f6','#ef4444','#8b5cf6','#06b6d4'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, cutout: '62%',
+                        plugins: {
+                            legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'rectRounded', font: { size: 11 } } },
+                            datalabels: dlDonut
+                        }
+                    }
+                });
+                </text>
+        }
+
+        // Docs donut
         @if (totalDocs > 0)
         {
                 <text>
@@ -309,35 +576,81 @@
                     type: 'doughnut',
                     data: {
                         labels: ['Aprobados','Pendientes','Rechazados'],
-                        datasets: [{ data: [@Model.DocsAprobados, @Model.DocsPendientes, @Model.DocsRechazados], backgroundColor: ['#10b981','#f59e0b','#ef4444'], borderWidth: 0 }]
+                        datasets: [{ data: [@Model.DocsAprobados,@Model.DocsPendientes,@Model.DocsRechazados], backgroundColor: ['#10b981','#f59e0b','#ef4444'], borderWidth: 0 }]
                     },
-                    options: { responsive: true, maintainAspectRatio: true, cutout: '65%', plugins: { legend: { display: false } } }
+                    options: { responsive: true, maintainAspectRatio: true, cutout: '68%', plugins: { legend: { display: false }, datalabels: dlDonut } }
                 });
                 </text>
         }
 
+        // Monthly trend
         @if (Model.MonthlyTrend.Any())
         {
                 <text>
                 new Chart(document.getElementById('chartMonthly'), {
-                    type: 'line',
+                    type: 'bar',
                     data: {
                         labels: [@Html.Raw(string.Join(",", Model.MonthlyTrend.Select(m => $"'{m.Month} {m.Year}'")))],
                         datasets: [{
                             label: 'Solicitudes',
                             data: [@string.Join(",", Model.MonthlyTrend.Select(m => m.Count))],
-                            borderColor: '#0d9e7a',
-                            backgroundColor: 'rgba(13,158,122,0.1)',
-                            fill: true, tension: 0.4, pointRadius: 4, borderWidth: 2, pointBackgroundColor: '#0d9e7a'
+                            backgroundColor: '#e84393',
+                            borderRadius: 4, borderSkipped: false, maxBarThickness: 45
                         }]
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { precision: 0 } } }
+                        plugins: { legend: { display: false }, datalabels: dlBar },
+                        scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { precision: 0 } } }
                     }
                 });
                 </text>
+        }
+
+        function filterTable(input, tableId) {
+            var filter = input.value.toLowerCase();
+            var table = document.getElementById(tableId);
+            var rows = table.querySelectorAll('tbody tr');
+            var visible = 0;
+            rows.forEach(function(row) {
+                var text = row.textContent.toLowerCase();
+                var show = text.indexOf(filter) > -1;
+                row.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+            var countEl = document.getElementById(tableId + 'Count');
+            if (countEl) countEl.textContent = 'Mostrando 1 a ' + visible + ' de ' + rows.length + ' registros';
+        }
+
+        function filterTableByColumn(value, tableId, colIndex) {
+            var table = document.getElementById(tableId);
+            var rows = table.querySelectorAll('tbody tr');
+            var visible = 0;
+            rows.forEach(function(row) {
+                var cell = row.cells[colIndex];
+                if (!value || (cell && cell.textContent.trim().indexOf(value) > -1)) { row.style.display = ''; visible++; }
+                else { row.style.display = 'none'; }
+            });
+            var countEl = document.getElementById(tableId + 'Count');
+            if (countEl) countEl.textContent = 'Mostrando 1 a ' + visible + ' de ' + rows.length + ' registros';
+        }
+
+        function exportTableToCSV(tableId, filename) {
+            var table = document.getElementById(tableId);
+            var rows = table.querySelectorAll('tr');
+            var csv = [];
+            rows.forEach(function(row) {
+                if (row.style.display === 'none') return;
+                var cols = row.querySelectorAll('th, td');
+                var rowData = [];
+                cols.forEach(function(col) { rowData.push('"' + col.textContent.trim().replace(/\n/g,' ').replace(/"/g, '""') + '"'); });
+                csv.push(rowData.join(','));
+            });
+            var blob = new Blob(['\uFEFF' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
         }
     </script>
 }

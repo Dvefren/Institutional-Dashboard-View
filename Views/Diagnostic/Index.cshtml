@@ -5,11 +5,13 @@
 
 <style>
     .diag-section {
-        margin-bottom: 32px;
+        margin-bottom: 24px;
+        max-width: calc(100vw - 310px);
+        overflow: hidden;
     }
 
         .diag-section h3 {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             margin-bottom: 12px;
             color: var(--accent);
@@ -19,120 +21,130 @@
         width: 100%;
         border-collapse: collapse;
         font-size: 12px;
-        font-family: monospace;
+        font-family: 'Plus Jakarta Sans', monospace;
+        table-layout: auto;
     }
 
         .diag-table th {
             text-align: left;
-            padding: 8px 12px;
-            background: var(--bg-input);
-            color: var(--text-secondary);
-            font-weight: 500;
+            padding: 8px 10px;
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.04em;
-            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
         }
 
+            .diag-table th:first-child {
+                border-radius: var(--radius-sm) 0 0 0;
+            }
+
+            .diag-table th:last-child {
+                border-radius: 0 var(--radius-sm) 0 0;
+            }
+
         .diag-table td {
-            padding: 8px 12px;
-            border-bottom: 1px solid var(--border);
+            padding: 7px 10px;
+            border-bottom: 1px solid var(--border-light);
             color: var(--text-secondary);
-            max-width: 250px;
+            max-width: 220px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
+        .diag-table tbody tr:hover {
+            background: var(--accent-light);
+        }
+
     .count-badge {
         display: inline-block;
         padding: 2px 10px;
-        border-radius: 6px;
+        border-radius: 20px;
         font-weight: 700;
-        font-size: 13px;
+        font-size: 12px;
+        min-width: 32px;
+        text-align: center;
     }
 
     .count-zero {
-        background: rgba(239,68,68,0.08);
+        background: var(--danger-light);
         color: var(--danger);
     }
 
     .count-low {
-        background: rgba(245,158,11,0.08);
+        background: var(--warning-light);
         color: var(--warning);
     }
 
     .count-good {
-        background: rgba(16,185,129,0.08);
+        background: var(--success-light);
         color: var(--success);
     }
 
     .count-error {
-        background: rgba(239,68,68,0.08);
+        background: var(--danger-light);
         color: var(--danger);
     }
 </style>
 
 @if (ViewBag.Error != null)
 {
-    <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 16px; margin-bottom: 24px; color: var(--danger); font-size: 13px;">
+    <div style="background: var(--danger-light); border: 1px solid rgba(239,68,68,0.2); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 20px; color: var(--danger); font-size: 13px;">
         <strong>Error:</strong> @ViewBag.Error
     </div>
 }
 
-<div style="margin-bottom: 32px;">
-    <p style="color: var(--text-secondary); font-size: 14px;">
-        Vista de diagnóstico — conteo de filas y datos de ejemplo de cada tabla.
-    </p>
-</div>
+<p class="page-desc">Vista de diagnóstico — conteo de filas y datos de ejemplo de cada tabla.</p>
 
 @if (Model.ContainsKey("counts"))
 {
     <div class="card diag-section">
         <h3>Conteo de Filas por Tabla</h3>
-        <table class="diag-table">
-            <thead>
-                <tr>
-                    <th>Tabla</th>
-                    <th style="text-align: right;">Filas</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var kvp in (Dictionary<string, int>)Model["counts"])
-                {
-                    var cssClass = kvp.Value == -1 ? "count-error" : kvp.Value == 0 ? "count-zero" : kvp.Value < 5 ? "count-low" : "count-good";
-                    var label = kvp.Value == -1 ? "ERROR" : kvp.Value.ToString();
+        <div style="overflow-x: auto;">
+            <table class="diag-table">
+                <thead>
                     <tr>
-                        <td style="font-weight: 600;">@kvp.Key</td>
-                        <td style="text-align: right;">
-                            <span class="count-badge @cssClass">@label</span>
-                        </td>
-                        <td>
-                            @if (kvp.Value == -1)
-                            {
-                                <span style="color: var(--danger);">No existe o error</span>
-                            }
-                            else if (kvp.Value == 0)
-                            {
-
-                                <span style="color: var(--danger);">Vacía</span>
-                            }
-                            else if (kvp.Value < 5)
-                            {
-
-                                <span style="color: var(--warning);">Pocos datos</span>
-                            }
-                            else
-                            {
-
-                                <span style="color: var(--success);">Con datos</span>
-                            }
-                        </td>
+                        <th style="width: 50%;">Tabla</th>
+                        <th style="text-align: right; width: 25%;">Filas</th>
+                        <th style="width: 25%;">Estado</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var kvp in (Dictionary<string, int>)Model["counts"])
+                    {
+                        var cssClass = kvp.Value == -1 ? "count-error" : kvp.Value == 0 ? "count-zero" : kvp.Value < 5 ? "count-low" : "count-good";
+                        var label = kvp.Value == -1 ? "ERROR" : kvp.Value.ToString();
+                        <tr>
+                            <td style="font-weight: 600; font-family: monospace; font-size: 12px;">@kvp.Key</td>
+                            <td style="text-align: right;">
+                                <span class="count-badge @cssClass">@label</span>
+                            </td>
+                            <td>
+                                @if (kvp.Value == -1)
+                                {
+                                    <span style="color: var(--danger); font-size: 12px;">No existe o error</span>
+                                }
+                                else if (kvp.Value == 0)
+                                {
+                                    <span style="color: var(--danger); font-size: 12px;">Vacía</span>
+                                }
+                                else if (kvp.Value < 5)
+                                {
+                                    <span style="color: var(--warning); font-size: 12px;">Pocos datos</span>
+                                }
+                                else
+                                {
+                                    <span style="color: var(--success); font-size: 12px;">Con datos</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 }
 
@@ -198,10 +210,8 @@
         {
             <div class="card diag-section">
                 <h3>@title</h3>
-                <p style="color: var(--text-muted); font-size: 13px;">Sin datos</p>
+                <p class="no-data">Sin datos</p>
             </div>
         }
     }
 }
-
-Navigate to `/Diagnostic` to view this page. It runs about 25 queries to give you a full X-ray of your database. Once you see what has data and what's empty, tell me what catches your eye and we'll build dashboards around it.
