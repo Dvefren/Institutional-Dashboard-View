@@ -7,5 +7,6 @@ namespace UTTN.Dashboard.Services.Interfaces
         Task<RectorateViewModel> GetRectorateDataAsync();
         Task<AdmissionsViewModel> GetAdmissionsDataAsync();
         Task<TramitesViewModel> GetTramitesDataAsync();
+        Task<AspirantesViewModel> GetAspirantesDataAsync();
     }
 }

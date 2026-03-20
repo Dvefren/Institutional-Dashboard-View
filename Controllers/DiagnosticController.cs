@@ -24,33 +24,40 @@ namespace UTTN.Dashboard.Controllers
                 // ROW COUNTS FOR EVERY TABLE
                 // ═══════════════════════════════════════
                 var tables = new[]
-                {
-                    "management_person_table",
-                    "management_user_table",
-                    "management_role_table",
-                    "management_permission_table",
-                    "management_rolepermission_table",
-                    "management_userrole_table",
-                    "management_career_table",
-                    "management_group_table",
-                    "management_student_table",
-                    "management_teacher_table",
-                    "management_usercareer_table",
-                    "management_studentcareer_history_table",
-                    "management_studentgroup_history_table",
-                    "Preinscripciones",
-                    "PreinscripcionDatosPersonales",
-                    "PreinscripcionDomicilio",
-                    "PreinscripcionEscolar",
-                    "PreinscripcionSalud",
-                    "PreinscripcionTutor",
-                    "Inscripciones",
-                    "CE_TramitesCategoria",
-                    "CE_TramitesRequisitos",
-                    "CE_TramitesSolicitud",
-                    "CE_TramitesDetalleDocumentos",
-                    "Visitas"
-                };
+                    {
+                        "management_person_table",
+                        "management_user_table",
+                        "management_role_table",
+                        "management_permission_table",
+                        "management_rolepermission_table",
+                        "management_userrole_table",
+                        "management_career_table",
+                        "management_group_table",
+                        "management_student_table",
+                        "management_teacher_table",
+                        "management_usercareer_table",
+                        "management_studentcareer_history_table",
+                        "management_studentgroup_history_table",
+                        "Preinscripciones",
+                        "PreinscripcionDatosPersonales",
+                        "PreinscripcionDomicilio",
+                        "PreinscripcionEscolar",
+                        "PreinscripcionSalud",
+                        "PreinscripcionTutor",
+                        "PreinscripcionOtros",
+                        "Inscripciones",
+                        "Aspirantes",
+                        "AspiranteDatosGenerales",
+                        "AspiranteDomicilio",
+                        "AspiranteEscolar",
+                        "AspiranteOtros",
+                        "AspiranteTutor",
+                        "CE_TramitesCategoria",
+                        "CE_TramitesRequisitos",
+                        "CE_TramitesSolicitud",
+                        "CE_TramitesDetalleDocumentos",
+                        "Visitas"
+                    };
 
                 var counts = new Dictionary<string, int>();
                 foreach (var table in tables)
@@ -139,6 +146,22 @@ namespace UTTN.Dashboard.Controllers
                 // Visitas diagnosticos (distinct)
                 report["diagnosticos"] = (await connection.QueryAsync(
                     "SELECT TOP 15 Diagnostico, COUNT(*) AS Total FROM Visitas GROUP BY Diagnostico ORDER BY Total DESC")).ToList();
+
+                // Aspirantes
+                report["aspirantes"] = (await connection.QueryAsync(
+                    "SELECT TOP 5 * FROM Aspirantes ORDER BY FechaRegistro DESC")).ToList();
+
+                // Aspirante Datos Generales
+                report["aspirante_datos"] = (await connection.QueryAsync(
+                    "SELECT TOP 5 * FROM AspiranteDatosGenerales")).ToList();
+
+                // Aspirante Otros
+                report["aspirante_otros"] = (await connection.QueryAsync(
+                    "SELECT TOP 5 * FROM AspiranteOtros")).ToList();
+
+                // PreinscripcionOtros
+                report["preinscripcion_otros"] = (await connection.QueryAsync(
+                    "SELECT TOP 5 * FROM PreinscripcionOtros")).ToList();
 
             }
             catch (Exception ex)

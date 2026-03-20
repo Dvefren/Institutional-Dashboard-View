@@ -149,8 +149,8 @@
 }
 
 @{
-    var sections = new (string key, string title)[]
-    {
+        var sections = new (string key, string title)[]
+        {
         ("careers", "Carreras (Top 5)"),
         ("groups", "Grupos (Top 5)"),
         ("students", "Estudiantes (Top 5)"),
@@ -158,6 +158,10 @@
         ("persons", "Personas (Top 5)"),
         ("preinscripciones", "Preinscripciones (Top 5)"),
         ("inscripciones", "Inscripciones (Top 5)"),
+        ("aspirantes", "Aspirantes (Top 5)"),
+        ("aspirante_datos", "Aspirante Datos Generales (Top 5)"),
+        ("aspirante_otros", "Aspirante Otros (Top 5)"),
+        ("preinscripcion_otros", "Preinscripción Otros (Top 5)"),
         ("tramite_categorias", "Categorías de Trámites"),
         ("tramite_solicitudes", "Solicitudes de Trámites (Top 5)"),
         ("visitas", "Visitas Médicas (Top 5)"),
@@ -169,7 +173,7 @@
         ("inscripcion_statuses", "Inscripciones por Estatus"),
         ("tramite_statuses", "Trámites por Estatus"),
         ("diagnosticos", "Top 15 Diagnósticos Médicos"),
-    };
+        };
 }
 
 @foreach (var (key, title) in sections)
