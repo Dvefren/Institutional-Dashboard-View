@@ -2,6 +2,12 @@
 {
     public class AspirantesViewModel
     {
+
+        // Filters
+        public int SelectedYear { get; set; }
+        public int SelectedCuatrimestre { get; set; }
+        public List<int> AvailableYears { get; set; } = new();
+
         // KPIs
         public int TotalAspirantes { get; set; }
         public int FichasPagadas { get; set; }

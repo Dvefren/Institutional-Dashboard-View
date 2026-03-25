@@ -12,11 +12,11 @@ namespace UTTN.Dashboard.Controllers
             _dashboardService = dashboardService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? year, int? cuatrimestre)
         {
             try
             {
-                var model = await _dashboardService.GetAspirantesDataAsync();
+                var model = await _dashboardService.GetAspirantesDataAsync(year, cuatrimestre);
                 return View(model);
             }
             catch (Exception ex)

@@ -4,9 +4,11 @@ namespace UTTN.Dashboard.Services.Interfaces
 {
     public interface IDashboardService
     {
-        Task<RectorateViewModel> GetRectorateDataAsync();
-        Task<AdmissionsViewModel> GetAdmissionsDataAsync();
-        Task<TramitesViewModel> GetTramitesDataAsync();
-        Task<AspirantesViewModel> GetAspirantesDataAsync();
+        Task<RectorateViewModel> GetRectorateDataAsync(int? year = null, int? cuatrimestre = null);
+        Task<AdmissionsViewModel> GetAdmissionsDataAsync(int? year = null, int? cuatrimestre = null);
+        Task<TramitesViewModel> GetTramitesDataAsync(int? year = null, int? cuatrimestre = null);
+        Task<AspirantesViewModel> GetAspirantesDataAsync(int? year = null, int? cuatrimestre = null);
+        Task<MedicalViewModel> GetMedicalDataAsync(int? year = null, int? cuatrimestre = null);
+        Task<VinculacionViewModel> GetVinculacionDataAsync(int? year = null, int? cuatrimestre = null);
     }
 }

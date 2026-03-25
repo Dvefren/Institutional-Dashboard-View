@@ -1,0 +1,596 @@
+﻿@model UTTN.Dashboard.ViewModels.Dashboard.VinculacionViewModel
+@{
+    ViewData["Title"] = "Vinculación — Relaciones Corporativas";
+    var cuatNames = new Dictionary<int, string> { { 0, "Todo el año" }, { 1, "Ene — Abr" }, { 2, "May — Ago" }, { 3, "Sep — Dic" } };
+}
+
+<style>
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .kpi-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow-sm);
+    }
+
+        .kpi-card .kpi-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .kpi-card .kpi-value {
+            font-size: 30px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .kpi-card .kpi-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .kpi-card .kpi-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+            .kpi-card .kpi-icon svg {
+                width: 22px;
+                height: 22px;
+                stroke-width: 1.8;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+                fill: none;
+            }
+
+    .section-title {
+        font-size: 15px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--text-primary);
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .section-title svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--accent);
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+    .chart-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .chart-box {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .chart-box-title {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--text-primary);
+        margin-bottom: 16px;
+    }
+
+    .chart-container {
+        position: relative;
+        width: 100%;
+        height: 280px;
+    }
+
+    .chart-container-donut {
+        position: relative;
+        width: 100%;
+        height: 260px;
+    }
+
+    .filter-bar {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        box-shadow: var(--shadow-sm);
+    }
+
+        .filter-bar label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .filter-bar select {
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            color: var(--text-primary);
+            background: white;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .filter-bar .btn-apply {
+            padding: 8px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .filter-bar .btn-clear {
+            padding: 8px 16px;
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+    .active-filter {
+        background: var(--accent-light);
+        border: 1px solid var(--accent);
+        border-radius: var(--radius-sm);
+        padding: 8px 16px;
+        font-size: 12px;
+        color: var(--accent);
+        font-weight: 600;
+        margin-bottom: 16px;
+        display: inline-block;
+    }
+
+    .filter-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .filter-row select {
+            padding: 7px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            color: var(--text-primary);
+            background: white;
+            cursor: pointer;
+            outline: none;
+        }
+
+    .record-count {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+    }
+
+    .hours-bar {
+        height: 8px;
+        border-radius: 4px;
+        background: var(--bg-input);
+        overflow: hidden;
+    }
+
+    .hours-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+    }
+</style>
+
+@if (ViewBag.Error != null)
+{
+    <div style="background: var(--danger-light); border: 1px solid rgba(239,68,68,0.2); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 20px; color: var(--danger); font-size: 13px;"><strong>Error:</strong> @ViewBag.Error</div>
+}
+
+<!-- Period Filter -->
+<form method="get" class="filter-bar">
+    <label>Año:</label>
+    <select name="year">@foreach (var y in Model.AvailableYears) { if (y == Model.SelectedYear) {
+    <option value="@y" selected="selected">@y</option>
+        } else
+    {
+
+        <option value="@y">@y</option>
+    } }
+</select>
+    <label>Cuatrimestre:</label>
+    <select name="cuatrimestre">@{
+        var cuatOptions = new Dictionary<int, string> { { 0, "Todo el año" }, { 1, "Ene — Abr" }, { 2, "May — Ago" }, { 3, "Sep — Dic" } };
+        }
+ @foreach (var opt in cuatOptions)
+{
+    if (opt.Key == Model.SelectedCuatrimestre)
+    {
+            <option value="@opt.Key" selected="selected">@opt.Value</option>
+        }
+        else
+        {
+
+            <option value="@opt.Key">@opt.Value</option>
+        }
+    }
+</select>
+    <button type="submit" class="btn-apply">Aplicar</button>
+    <a href="@Url.Action("Index", "Vinculacion")" class="btn-clear">Limpiar</a>
+</form>
+@if (Model.SelectedCuatrimestre > 0)
+{
+    <div class="active-filter">Filtro activo: Año @Model.SelectedYear, @cuatNames[Model.SelectedCuatrimestre]</div>
+}
+
+<!-- KPI Cards -->
+<div class="kpi-grid">
+    <div class="kpi-card"><div><div class="kpi-label">Programas Activos</div><div class="kpi-value" style="color:var(--accent);">@Model.TotalPrograms</div></div><div class="kpi-icon" style="background:var(--accent-light);"><svg viewBox="0 0 24 24" stroke="var(--accent)"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Organizaciones</div><div class="kpi-value" style="color:var(--success);">@Model.TotalOrganizations</div></div><div class="kpi-icon" style="background:var(--success-light);"><svg viewBox="0 0 24 24" stroke="var(--success)"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Asignaciones</div><div class="kpi-value" style="color:var(--purple);">@Model.TotalAssignments</div><div class="kpi-sub">@Model.Completados completados · @Model.EnProceso en proceso</div></div><div class="kpi-icon" style="background:var(--purple-light);"><svg viewBox="0 0 24 24" stroke="var(--purple)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Evaluación Promedio</div><div class="kpi-value" style="color:var(--warning);">@Model.PromedioEvaluacion</div><div class="kpi-sub">@Model.PromedioHoras hrs aprobadas prom.</div></div><div class="kpi-icon" style="background:var(--warning-light);"><svg viewBox="0 0 24 24" stroke="var(--warning)"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg></div></div>
+</div>
+
+<!-- 2 Charts: By Program Type (bar) + Status (donut) -->
+<div class="chart-row">
+    <div class="chart-box">
+        <div class="chart-box-title">Asignaciones por Tipo de Programa</div>
+        @if (Model.ByProgramType.Any())
+        {
+            <div class="chart-container"><canvas id="chartType"></canvas></div>
+        }
+        else
+        {
+
+            <p class="no-data">Sin datos para este periodo</p>
+        }
+    </div>
+    <div class="chart-box">
+        <div class="chart-box-title">Estatus de Asignaciones</div>
+        @if (Model.ByStatus.Any())
+        {
+            <div class="chart-container-donut"><canvas id="chartStatus"></canvas></div>
+        }
+        else
+        {
+
+            <p class="no-data">Sin datos</p>
+        }
+    </div>
+</div>
+
+<!-- Table 1: Estatus + Documentos side by side -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    @if (Model.ByStatus.Any())
+    {
+        <div class="chart-box">
+            <div class="chart-box-title">Resumen por Estatus</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Estatus</th><th style="text-align:center;">Total</th><th style="text-align:center;">%</th></tr></thead>
+                    <tbody>
+                        @foreach (var s in Model.ByStatus)
+                        {
+                            var sc = s.Status switch { "Completado" => "badge-success", "En Proceso" => "badge-info", "Asignado" or "Por Iniciar" => "badge-warning", "Cancelado" => "badge-danger", _ => "badge-neutral" };
+                            <tr><td style="font-weight:500;color:var(--text-primary);">@s.Status</td><td style="text-align:center;"><span class="badge @sc">@s.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@s.Percentage%</span></td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    @if (Model.DocsByStatus.Any())
+    {
+        <div class="chart-box">
+            <div class="chart-box-title">Documentos por Estatus</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Estatus</th><th style="text-align:center;">Total</th><th style="text-align:center;">%</th></tr></thead>
+                    <tbody>
+                        @foreach (var d in Model.DocsByStatus)
+                        {
+                            var dc = d.Status switch { "APPROVED" => "badge-success", "PENDING" => "badge-warning", "SUBMITTED" => "badge-info", "REJECTED" => "badge-danger", _ => "badge-neutral" };
+                            <tr><td style="font-weight:500;color:var(--text-primary);">@d.Status</td><td style="text-align:center;"><span class="badge @dc">@d.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@d.Percentage%</span></td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Table 2: Top Organizaciones -->
+@if (Model.ByOrganization.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></svg> Top Organizaciones</div>
+    <div class="chart-box" style="margin-bottom:24px;">
+        <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead><tr><th>#</th><th>Organización</th><th style="text-align:center;">Estudiantes</th><th style="text-align:center;">%</th></tr></thead>
+                <tbody>@{
+                var rk = 1;
+            }
+ @foreach (var o in Model.ByOrganization)
+{
+                <tr><td style="color:var(--text-muted);font-weight:600;">@rk</td><td style="font-weight:500;color:var(--text-primary);">@o.Status</td><td style="text-align:center;"><span class="badge badge-accent">@o.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@o.Percentage%</span></td></tr>
+                rk++;
+            }
+</tbody>
+        </table>
+    </div>
+</div>
+}
+
+<!-- Table 3: Catálogo de Programas -->
+@if (Model.Programs.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" /></svg> Catálogo de Programas</div>
+    <div class="chart-box" style="margin-bottom:24px;">
+        <div class="filter-row">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <label style="font-size:13px;font-weight:600;color:var(--text-secondary);">Tipo:</label>
+                <select onchange="filterTableByColumn(this.value,'tblPrograms',2)">
+                    <option value="">Todos</option>
+                    @foreach (var t in Model.ByProgramType)
+                    {
+                        <option value="@t.Status">@t.Status</option>
+                    }
+                </select>
+            </div>
+            <button class="btn-export" onclick="exportTableToCSV('tblPrograms','catalogo_programas.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar</button>
+        </div>
+        <div class="record-count" id="tblProgramsCount">Mostrando 1 a @Model.Programs.Count de @Model.Programs.Count registros</div>
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="tblPrograms">
+                <thead><tr><th>Código</th><th>Programa</th><th>Tipo</th><th>Periodo</th><th style="text-align:center;">Año</th><th style="text-align:center;">Hrs. Req.</th><th style="text-align:center;">Estudiantes</th><th style="text-align:center;">Activo</th></tr></thead>
+                <tbody>
+                    @foreach (var p in Model.Programs)
+                    {
+                        <tr>
+                            <td style="font-weight:600;color:var(--accent);">@p.Code</td>
+                            <td style="font-weight:500;color:var(--text-primary);">@p.Name</td>
+                            <td><span class="badge badge-info">@p.Type</span></td>
+                            <td>@p.Period</td>
+                            <td style="text-align:center;">@p.Year</td>
+                            <td style="text-align:center;"><span class="badge badge-neutral">@p.RequiredHours</span></td>
+                            <td style="text-align:center;"><span class="badge badge-accent">@p.TotalStudents</span></td>
+                            <td style="text-align:center;">@if (p.IsActive) {
+                            <span class="badge badge-success">Sí</span>
+                        } else
+                        {
+
+                            <span class="badge badge-danger">No</span>
+                        }
+    </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+}
+
+<!-- Table 4: Directorio de Organizaciones -->
+@if (Model.Organizations.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg> Directorio de Organizaciones</div>
+    <div class="chart-box" style="margin-bottom:24px;">
+        <div class="filter-row">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <label style="font-size:13px;font-weight:600;color:var(--text-secondary);">Tipo:</label>
+                <select onchange="filterTableByColumn(this.value,'tblOrgs',1)">
+                    <option value="">Todos</option>
+                    @{
+                        var orgTypes = Model.Organizations.Select(o => o.Type).Distinct().OrderBy(t => t);
+                    }
+                    @foreach (var t in orgTypes)
+                    {
+                        <option value="@t">@t</option>
+                    }
+                </select>
+            </div>
+            <button class="btn-export" onclick="exportTableToCSV('tblOrgs','directorio_organizaciones.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar</button>
+        </div>
+        <div class="record-count" id="tblOrgsCount">Mostrando 1 a @Model.Organizations.Count de @Model.Organizations.Count registros</div>
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="tblOrgs">
+                <thead><tr><th>Organización</th><th>Tipo</th><th>Ciudad</th><th>Contacto</th><th>Teléfono</th><th style="text-align:center;">Estudiantes</th></tr></thead>
+                <tbody>
+                    @foreach (var o in Model.Organizations)
+                    {
+                        <tr>
+                            <td style="font-weight:500;color:var(--text-primary);">@o.Name</td>
+                            <td><span class="badge badge-info">@o.Type</span></td>
+                            <td>@o.City</td>
+                            <td style="font-size:12px;">@o.ContactName</td>
+                            <td style="font-size:12px;color:var(--text-muted);">@o.Phone</td>
+                            <td style="text-align:center;"><span class="badge badge-accent">@o.TotalStudents</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<!-- Table 5: Asignaciones Recientes -->
+@if (Model.RecentAssignments.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> Asignaciones de Estudiantes</div>
+    <div class="chart-box">
+        <div class="filter-row">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <label style="font-size:13px;font-weight:600;color:var(--text-secondary);">Estatus:</label>
+                <select onchange="filterTableByColumn(this.value,'tblAssign',5)">
+                    <option value="">Todos</option>
+                    @foreach (var s in Model.ByStatus)
+                    {
+                        <option value="@s.Status">@s.Status</option>
+                    }
+                </select>
+                <label style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-left:8px;">Tipo:</label>
+                <select onchange="filterTableByColumn(this.value,'tblAssign',3)">
+                    <option value="">Todos</option>
+                    @foreach (var t in Model.ByProgramType)
+                    {
+                        <option value="@t.Status">@t.Status</option>
+                    }
+                </select>
+            </div>
+            <button class="btn-export" onclick="exportTableToCSV('tblAssign','asignaciones_estudiantes.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar</button>
+        </div>
+        <div class="record-count" id="tblAssignCount">Mostrando 1 a @Model.RecentAssignments.Count de @Model.RecentAssignments.Count registros</div>
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="tblAssign">
+                <thead><tr><th>Alumno</th><th>Matrícula</th><th>Programa</th><th>Tipo</th><th>Organización</th><th style="text-align:center;">Estatus</th><th style="text-align:center;">Hrs. Apr.</th><th style="text-align:center;">Eval.</th><th style="text-align:right;">Inicio</th></tr></thead>
+                <tbody>
+                    @foreach (var a in Model.RecentAssignments)
+                    {
+                        var sc = a.Status switch { "Completado" => "badge-success", "En Proceso" => "badge-info", "Asignado" or "Por Iniciar" => "badge-warning", "Cancelado" => "badge-danger", _ => "badge-neutral" };
+                        var ec = a.EvaluationScore.HasValue ? (a.EvaluationScore >= 9 ? "badge-success" : a.EvaluationScore >= 8 ? "badge-accent" : a.EvaluationScore >= 7 ? "badge-warning" : "badge-danger") : "badge-neutral";
+                        <tr>
+                            <td style="font-weight:500;color:var(--text-primary);">@a.StudentName</td>
+                            <td style="font-size:12px;color:var(--text-muted);">@a.Matricula</td>
+                            <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@a.ProgramName</td>
+                            <td><span class="badge badge-info" style="font-size:10px;">@a.ProgramType</span></td>
+                            <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@a.OrganizationName</td>
+                            <td style="text-align:center;"><span class="badge @sc">@a.Status</span></td>
+                            <td style="text-align:center;"><span class="badge badge-neutral">@a.ApprovedHours</span></td>
+                            <td style="text-align:center;"><span class="badge @ec">@(a.EvaluationScore.HasValue? a.EvaluationScore.Value.ToString("0.0") : "—")</span></td>
+                            <td style="text-align:right;font-size:12px;color:var(--text-muted);">@(a.StartDate.HasValue? a.StartDate.Value.ToString("dd/MM/yyyy") : "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<!-- Table 6: Documentos -->
+@if (Model.RecentDocuments.Any())
+{
+    <div class="section-title">
+        <svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline points="13 2 13 9 20 9" /></svg>
+        Documentos de Vinculación
+    </div>
+    <div class="chart-box">
+        <div class="filter-row">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <label style="font-size:13px;font-weight:600;color:var(--text-secondary);">Estatus:</label>
+                <select onchange="filterTableByColumn(this.value,'tblDocs',4)">
+                    <option value="">Todos</option>
+                    @foreach (var d in Model.DocsByStatus)
+                    {
+                        <option value="@d.Status">@d.Status</option>
+                    }
+                </select>
+                <label style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-left:8px;">Tipo:</label>
+                <select onchange="filterTableByColumn(this.value,'tblDocs',2)">
+                    <option value="">Todos</option>
+                    @{
+                        var docTypes = Model.RecentDocuments.Select(d => d.DocumentType).Distinct().OrderBy(t => t);
+                    }
+                    @foreach (var t in docTypes)
+                    {
+                        <option value="@t">@t</option>
+                    }
+                </select>
+            </div>
+            <button class="btn-export" onclick="exportTableToCSV('tblDocs','documentos_vinculacion.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar</button>
+        </div>
+        <div class="record-count" id="tblDocsCount">Mostrando 1 a @Model.RecentDocuments.Count de @Model.RecentDocuments.Count registros</div>
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="tblDocs">
+                <thead><tr><th>Título</th><th>Alumno</th><th>Tipo</th><th>Programa</th><th style="text-align:center;">Estatus</th><th>Archivo</th><th style="text-align:right;">Fecha</th></tr></thead>
+                <tbody>
+                    @foreach (var doc in Model.RecentDocuments)
+                    {
+                        var dc = doc.Status switch { "APPROVED" => "badge-success", "PENDING" => "badge-warning", "SUBMITTED" => "badge-info", "REJECTED" => "badge-danger", _ => "badge-neutral" };
+                        <tr>
+                            <td style="font-weight:500;color:var(--text-primary);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@doc.Title</td>
+                            <td>@doc.StudentName</td>
+                            <td><span class="badge badge-info" style="font-size:10px;">@doc.DocumentType</span></td>
+                            <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;">@doc.ProgramName</td>
+                            <td style="text-align:center;"><span class="badge @dc">@doc.Status</span></td>
+                            <td style="font-family:monospace;font-size:11px;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@doc.FileName</td>
+                            <td style="text-align:right;font-size:12px;color:var(--text-muted);">@doc.UploadDate.ToString("dd/MM/yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script>
+        Chart.register(ChartDataLabels);
+        Chart.defaults.color = '#8a9e95'; Chart.defaults.borderColor = 'rgba(0,0,0,0.06)'; Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif"; Chart.defaults.font.size = 12;
+        var dlBar = { anchor:'end', align:'top', color:'#1a2b25', font:{weight:'700',size:13}, offset:2 };
+        var dlDonut = { color:'#fff', font:{weight:'700',size:14}, formatter:function(v,ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b},0);var p=t>0?Math.round(v/t*100):0;return p>5?p+'%':'';} };
+
+        @if (Model.ByProgramType.Any())
+        {
+            <text>
+            new Chart(document.getElementById('chartType'),{type:'bar',data:{labels:[@Html.Raw(string.Join(",", Model.ByProgramType.Select(t => $"'{t.Status}'")))],datasets:[{data:[@string.Join(",", Model.ByProgramType.Select(t => t.Count))],backgroundColor:'#22c3a6',borderRadius:4,borderSkipped:false,maxBarThickness:55}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:dlBar},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{precision:0}}}}});
+            </text>
+        }
+
+        @if (Model.ByStatus.Any())
+        {
+            <text>
+            new Chart(document.getElementById('chartStatus'),{type:'doughnut',data:{labels:[@Html.Raw(string.Join(",", Model.ByStatus.Select(s => $"'{s.Status}'")))],datasets:[{data:[@string.Join(",", Model.ByStatus.Select(s => s.Count))],backgroundColor:['#10b981','#3b82f6','#f59e0b','#8b5cf6','#ef4444'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true,pointStyle:'rectRounded',font:{size:11}}},datalabels:dlDonut}}});
+            </text>
+        }
+
+        function filterTableByColumn(value,tableId,colIndex){var table=document.getElementById(tableId);if(!table)return;if(!window._filters)window._filters={};if(!window._filters[tableId])window._filters[tableId]={};if(value){window._filters[tableId][colIndex]=value;}else{delete window._filters[tableId][colIndex];}var rows=table.querySelectorAll('tbody tr');var visible=0;rows.forEach(function(row){var show=true;for(var ci in window._filters[tableId]){var fv=window._filters[tableId][ci];var cell=row.cells[parseInt(ci)];if(cell&&cell.textContent.trim().indexOf(fv)===-1){show=false;break;}}row.style.display=show?'':'none';if(show)visible++;});var el=document.getElementById(tableId+'Count');if(el)el.textContent='Mostrando 1 a '+visible+' de '+rows.length+' registros';}
+        function exportTableToCSV(tid,fn){var t=document.getElementById(tid);var r=t.querySelectorAll('tr');var c=[];r.forEach(function(row){if(row.style.display==='none')return;var cols=row.querySelectorAll('th,td');var d=[];cols.forEach(function(col){d.push('"'+col.textContent.trim().replace(/\n/g,' ').replace(/"/g,'""')+'"');});c.push(d.join(','));});var b=new Blob(['\uFEFF'+c.join('\n')],{type:'text/csv;charset=utf-8;'});var l=document.createElement('a');l.href=URL.createObjectURL(b);l.download=fn;l.click();}
+    </script>
+}

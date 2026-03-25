@@ -1,9 +1,8 @@
 ﻿@model UTTN.Dashboard.ViewModels.Dashboard.AdmissionsViewModel
 @{
-    ViewData["Title"] = "Admisiones y Nuevo Ingreso";
+    ViewData["Title"] = "Inscripciones — Embudo de Captación";
     var totalGender = Model.MaleCount + Model.FemaleCount + Model.OtherGenderCount;
-    var malePerc = totalGender > 0 ? Math.Round((decimal)Model.MaleCount / totalGender * 100, 1) : 0;
-    var femalePerc = totalGender > 0 ? Math.Round((decimal)Model.FemaleCount / totalGender * 100, 1) : 0;
+    var cuatNames = new Dictionary<int, string> { { 0, "Todo el año" }, { 1, "Ene — Abr" }, { 2, "May — Ago" }, { 3, "Sep — Dic" } };
 }
 
 <style>
@@ -11,14 +10,14 @@
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 16px;
-        margin-bottom: 28px;
+        margin-bottom: 24px;
     }
 
     .kpi-card {
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: var(--radius);
-        padding: 20px 22px;
+        padding: 18px 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -31,26 +30,25 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .kpi-card .kpi-value {
-            font-size: 32px;
+            font-size: 30px;
             font-weight: 700;
             line-height: 1;
-            letter-spacing: -0.02em;
         }
 
         .kpi-card .kpi-sub {
             font-size: 11px;
             color: var(--text-muted);
-            margin-top: 6px;
+            margin-top: 4px;
         }
 
         .kpi-card .kpi-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -58,8 +56,8 @@
         }
 
             .kpi-card .kpi-icon svg {
-                width: 24px;
-                height: 24px;
+                width: 22px;
+                height: 22px;
                 stroke-width: 1.8;
                 stroke-linecap: round;
                 stroke-linejoin: round;
@@ -72,7 +70,7 @@
         text-transform: uppercase;
         letter-spacing: 0.03em;
         color: var(--text-primary);
-        margin-bottom: 16px;
+        margin-bottom: 14px;
         display: flex;
         align-items: center;
         gap: 10px;
@@ -95,18 +93,11 @@
         margin-bottom: 24px;
     }
 
-    .chart-row-equal {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-
     .chart-box {
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: var(--radius);
-        padding: 22px;
+        padding: 20px;
         box-shadow: var(--shadow-sm);
     }
 
@@ -116,79 +107,106 @@
         text-transform: uppercase;
         letter-spacing: 0.03em;
         color: var(--text-primary);
-        margin-bottom: 18px;
+        margin-bottom: 16px;
     }
 
     .chart-container {
         position: relative;
         width: 100%;
-        height: 300px;
+        height: 280px;
     }
 
     .chart-container-donut {
         position: relative;
         width: 100%;
-        height: 280px;
+        height: 260px;
     }
 
-    .status-pills {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-bottom: 24px;
-    }
-
-    .status-pill {
+    .filter-bar {
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: var(--radius);
-        padding: 14px 28px;
-        text-align: center;
-        box-shadow: var(--shadow-sm);
-        min-width: 120px;
-    }
-
-        .status-pill .sp-value {
-            font-size: 28px;
-            font-weight: 700;
-            line-height: 1;
-        }
-
-        .status-pill .sp-label {
-            margin-top: 6px;
-        }
-
-        .status-pill .sp-perc {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-    .filter-row {
+        padding: 14px 20px;
+        margin-bottom: 20px;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 12px;
+        gap: 16px;
         flex-wrap: wrap;
-        gap: 10px;
+        box-shadow: var(--shadow-sm);
     }
 
-        .filter-row select {
+        .filter-bar label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .filter-bar select {
             padding: 8px 14px;
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             font-family: inherit;
             font-size: 13px;
             color: var(--text-primary);
-            background: var(--bg-card);
+            background: white;
             cursor: pointer;
             outline: none;
         }
 
-        .filter-row .filter-label {
+        .filter-bar .btn-apply {
+            padding: 8px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
             font-size: 13px;
             font-weight: 600;
+            cursor: pointer;
+        }
+
+        .filter-bar .btn-clear {
+            padding: 8px 16px;
+            background: var(--bg-input);
             color: var(--text-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+    .active-filter {
+        background: var(--accent-light);
+        border: 1px solid var(--accent);
+        border-radius: var(--radius-sm);
+        padding: 8px 16px;
+        font-size: 12px;
+        color: var(--accent);
+        font-weight: 600;
+        margin-bottom: 16px;
+        display: inline-block;
+    }
+
+    .filter-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .filter-row select {
+            padding: 7px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            color: var(--text-primary);
+            background: white;
+            cursor: pointer;
+            outline: none;
         }
 
     .record-count {
@@ -196,215 +214,248 @@
         color: var(--text-muted);
         margin-bottom: 8px;
     }
-
-    /* Progress bar for conversion */
-    .progress-track {
-        width: 100%;
-        height: 10px;
-        background: var(--bg-input);
-        border-radius: 5px;
-        overflow: hidden;
-        margin-top: 8px;
-    }
-
-    .progress-fill {
-        height: 100%;
-        border-radius: 5px;
-        transition: width 0.5s;
-    }
 </style>
 
 @if (ViewBag.Error != null)
 {
     <div style="background: var(--danger-light); border: 1px solid rgba(239,68,68,0.2); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 20px; color: var(--danger); font-size: 13px;">
-        <strong>Error de conexión:</strong> @ViewBag.Error
+        <strong>Error:</strong> @ViewBag.Error
     </div>
+}
+
+<!-- Period Filter -->
+<form method="get" class="filter-bar">
+    <label>Año:</label>
+    <select name="year">
+        @foreach (var y in Model.AvailableYears)
+        {
+            if (y == Model.SelectedYear)
+            {
+                <option value="@y" selected="selected">@y</option>
+            }
+            else
+            {
+                <option value="@y">@y</option>
+            }
+        }
+    </select>
+    <label>Cuatrimestre:</label>
+    <select name="cuatrimestre">
+        @{
+            var cuatOptions = new Dictionary<int, string> { { 0, "Todo el año" }, { 1, "Ene — Abr" }, { 2, "May — Ago" }, { 3, "Sep — Dic" } };
+        }
+        @foreach (var opt in cuatOptions)
+        {
+            if (opt.Key == Model.SelectedCuatrimestre)
+            {
+                <option value="@opt.Key" selected="selected">@opt.Value</option>
+            }
+            else
+            {
+                <option value="@opt.Key">@opt.Value</option>
+            }
+        }
+    </select>
+    <button type="submit" class="btn-apply">Aplicar</button>
+    <a href="@Url.Action("Index", "Admissions")" class="btn-clear">Limpiar</a>
+</form>
+
+@if (Model.SelectedCuatrimestre > 0)
+{
+    <div class="active-filter">Filtro activo: Año @Model.SelectedYear, @cuatNames[Model.SelectedCuatrimestre]</div>
 }
 
 <!-- KPI Cards -->
 <div class="kpi-grid">
     <div class="kpi-card">
-        <div class="kpi-info">
-            <div class="kpi-label">Total Preinscripciones</div>
-            <div class="kpi-value" style="color: var(--accent);">@Model.TotalPreinscripciones</div>
-        </div>
-        <div class="kpi-icon" style="background: var(--accent-light);">
-            <svg viewBox="0 0 24 24" stroke="var(--accent)"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><rect x="8" y="2" width="8" height="4" rx="1" /></svg>
-        </div>
+        <div><div class="kpi-label">Preinscripciones</div><div class="kpi-value" style="color: var(--accent);">@Model.TotalPreinscripciones</div></div>
+        <div class="kpi-icon" style="background: var(--accent-light);"><svg viewBox="0 0 24 24" stroke="var(--accent)"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><rect x="8" y="2" width="8" height="4" rx="1" /></svg></div>
     </div>
     <div class="kpi-card">
-        <div class="kpi-info">
-            <div class="kpi-label">Inscritos Reales</div>
-            <div class="kpi-value" style="color: var(--success);">@Model.TotalInscripciones</div>
-        </div>
-        <div class="kpi-icon" style="background: var(--success-light);">
-            <svg viewBox="0 0 24 24" stroke="var(--success)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
-        </div>
+        <div><div class="kpi-label">Inscripciones</div><div class="kpi-value" style="color: var(--success);">@Model.TotalInscripciones</div></div>
+        <div class="kpi-icon" style="background: var(--success-light);"><svg viewBox="0 0 24 24" stroke="var(--success)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg></div>
     </div>
     <div class="kpi-card">
-        <div class="kpi-info">
-            <div class="kpi-label">Promedio General</div>
-            <div class="kpi-value" style="color: var(--purple);">@Model.PromedioGeneral</div>
-        </div>
-        <div class="kpi-icon" style="background: var(--purple-light);">
-            <svg viewBox="0 0 24 24" stroke="var(--purple)"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" /></svg>
-        </div>
+        <div><div class="kpi-label">Promedio General</div><div class="kpi-value" style="color: var(--purple);">@Model.PromedioGeneral</div></div>
+        <div class="kpi-icon" style="background: var(--purple-light);"><svg viewBox="0 0 24 24" stroke="var(--purple)"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" /></svg></div>
     </div>
     <div class="kpi-card">
-        <div class="kpi-info">
-            <div class="kpi-label">Cumplimiento de Meta</div>
-            <div class="kpi-value" style="color: var(--accent);">@Model.ConversionRate%</div>
-            <div class="progress-track">
-                <div class="progress-fill" style="width: @Model.ConversionRate%; background: var(--accent);"></div>
+        <div>
+            <div class="kpi-label">Tasa Conversión</div><div class="kpi-value" style="color: var(--warning);">@Model.ConversionRate%</div>
+            <div style="width:100%;height:8px;background:var(--bg-input);border-radius:4px;overflow:hidden;margin-top:6px;">
+                <div style="height:100%;width:@Model.ConversionRate%;background:var(--warning);border-radius:4px;"></div>
             </div>
         </div>
-        <div class="kpi-icon" style="background: var(--accent-light);">
-            <svg viewBox="0 0 24 24" stroke="var(--accent)"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
-        </div>
+        <div class="kpi-icon" style="background: var(--warning-light);"><svg viewBox="0 0 24 24" stroke="var(--warning)"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg></div>
     </div>
 </div>
 
-<!-- Embudo de Conversión (bar) + Inscritos por Carrera (donut) -->
+<!-- 2 Charts: Preinscripciones by Career (bar) + Status (donut) -->
 <div class="chart-row">
     <div class="chart-box">
-        <div class="chart-box-title">Embudo de Conversión (Drop-Off)</div>
-        @if (Model.PreinscripcionesByStatus.Any())
-        {
-            <div class="chart-container"><canvas id="chartFunnel"></canvas></div>
-        }
-        else
-        {
-            <p class="no-data">Sin datos</p>
-        }
-    </div>
-    <div class="chart-box">
-        <div class="chart-box-title">Nuevos Inscritos por Carrera</div>
+        <div class="chart-box-title">Preinscripciones por Carrera</div>
         @if (Model.PreinscripcionesByCareer.Any())
         {
-            <div class="chart-container-donut"><canvas id="chartCareerDonut"></canvas></div>
+            <div class="chart-container"><canvas id="chartCareer"></canvas></div>
         }
         else
         {
-            <p class="no-data">Sin datos</p>
+
+            <p class="no-data">Sin datos para este periodo</p>
+        }
+    </div>
+    <div class="chart-box">
+        <div class="chart-box-title">Estatus de Preinscripciones</div>
+        @if (Model.PreinscripcionesByStatus.Any())
+        {
+            <div class="chart-container-donut"><canvas id="chartStatus"></canvas></div>
+        }
+        else
+        {
+
+            <p class="no-data">Sin datos para este periodo</p>
         }
     </div>
 </div>
 
-<!-- Promedio distribution + Medio difusion -->
-<div class="chart-row-equal">
-    <div class="chart-box">
-        <div class="chart-box-title">Distribución de Promedios</div>
-        @if (Model.PromedioDistribution.Any())
-        {
-            <div class="chart-container"><canvas id="chartPromedio"></canvas></div>
-        }
-        else
-        {
-            <p class="no-data">Sin datos</p>
-        }
+<!-- Table 1: Preinscripciones por Carrera -->
+@if (Model.PreinscripcionesByCareer.Any())
+{
+    <div class="section-title">
+        <svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>
+        Preinscripciones por Carrera
     </div>
-    <div class="chart-box">
-        <div class="chart-box-title">Medio de Difusión</div>
-        @if (Model.ByMedioDifusion.Any())
-        {
-            <div class="chart-container-donut"><canvas id="chartMedio"></canvas></div>
-        }
-        else
-        {
-            <p class="no-data">Sin datos</p>
-        }
+    <div class="chart-box" style="margin-bottom: 24px;">
+        <div class="filter-row">
+            <div style="display:flex;gap:10px;align-items:center;">
+                <label style="font-size:13px;font-weight:600;color:var(--text-secondary);">Carrera:</label>
+                <select onchange="filterTableByColumn(this.value,'tblPreCarreras',0)">
+                    <option value="">Todas</option>
+                    @foreach (var c in Model.PreinscripcionesByCareer)
+                    {
+                        <option value="@c.CareerName">@c.CareerName</option>
+                    }
+                </select>
+            </div>
+            <button class="btn-export" onclick="exportTableToCSV('tblPreCarreras','preinscripciones_carrera.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar</button>
+        </div>
+        <div class="record-count" id="tblPreCarrerasCount">Mostrando 1 a @Model.PreinscripcionesByCareer.Count de @Model.PreinscripcionesByCareer.Count registros</div>
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="tblPreCarreras">
+                <thead><tr><th>Carrera</th><th style="text-align:center;">Total</th><th style="text-align:center;">%</th></tr></thead>
+                <tbody>
+                    @foreach (var c in Model.PreinscripcionesByCareer)
+                    {
+                        <tr><td style="font-weight:500;color:var(--text-primary);">@c.CareerName</td><td style="text-align:center;"><span class="badge badge-accent">@c.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@c.Percentage%</span></td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
+}
+
+<!-- Table 2: Inscripciones por Estatus -->
+@if (Model.InscripcionesByStatus.Any())
+{
+    <div class="section-title">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+        Inscripciones por Estatus
+    </div>
+    <div class="chart-box" style="margin-bottom: 24px;">
+        <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead><tr><th>Estatus</th><th style="text-align:center;">Total</th><th style="text-align:center;">%</th></tr></thead>
+                <tbody>
+                    @foreach (var s in Model.InscripcionesByStatus)
+                    {
+                        var sc = s.Status switch { "Aceptado" => "badge-success", "Pendiente" => "badge-warning", "Rechazado" => "badge-danger", _ => "badge-accent" };
+                        <tr><td style="font-weight:500;color:var(--text-primary);">@s.Status</td><td style="text-align:center;"><span class="badge @sc">@s.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@s.Percentage%</span></td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<!-- Table 3: Origen Geográfico -->
+@if (Model.ByEstado.Any())
+{
+    <div class="section-title">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+        Origen Geográfico
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div class="chart-box">
+            <div class="chart-box-title">Por Estado</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table" id="tblEstado">
+                    <thead><tr><th>Estado</th><th style="text-align:center;">Total</th><th style="text-align:center;">%</th></tr></thead>
+                    <tbody>
+                        @foreach (var e in Model.ByEstado)
+                        {
+                            <tr><td style="font-weight:500;color:var(--text-primary);">@e.Name</td><td style="text-align:center;"><span class="badge badge-accent">@e.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@e.Percentage%</span></td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="chart-box">
+            <div class="chart-box-title">Top 10 Municipios</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table" id="tblMunicipio">
+                    <thead><tr><th>Municipio</th><th style="text-align:center;">Total</th><th style="text-align:center;">%</th></tr></thead>
+                    <tbody>
+                        @foreach (var m in Model.ByMunicipio)
+                        {
+                            <tr><td style="font-weight:500;color:var(--text-primary);">@m.Name</td><td style="text-align:center;"><span class="badge badge-accent">@m.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@m.Percentage%</span></td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Table 4: Medio de Difusión + Promedios side by side -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    @if (Model.ByMedioDifusion.Any())
+    {
+        <div class="chart-box">
+            <div class="chart-box-title">Medio de Difusión</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Medio</th><th style="text-align:center;">Total</th><th style="text-align:center;">%</th></tr></thead>
+                    <tbody>
+                        @foreach (var m in Model.ByMedioDifusion)
+                        {
+                            <tr><td style="font-weight:500;color:var(--text-primary);">@m.Status</td><td style="text-align:center;"><span class="badge badge-accent">@m.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@m.Percentage%</span></td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    @if (Model.PromedioDistribution.Any())
+    {
+        <div class="chart-box">
+            <div class="chart-box-title">Distribución de Promedios</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Rango</th><th style="text-align:center;">Total</th></tr></thead>
+                    <tbody>
+                        @foreach (var p in Model.PromedioDistribution)
+                        {
+                            var pc = p.Range.StartsWith("9") ? "badge-success" : p.Range.StartsWith("8") ? "badge-accent" : p.Range.StartsWith("7") ? "badge-warning" : "badge-danger";
+                            <tr><td style="font-weight:500;color:var(--text-primary);">@p.Range</td><td style="text-align:center;"><span class="badge @pc">@p.Count</span></td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
 </div>
 
-<!-- Geographic: Estado (bar) + Municipio (horizontal bar) -->
-<div class="chart-row-equal">
-    <div class="chart-box">
-        <div class="chart-box-title">Origen por Estado</div>
-        @if (Model.ByEstado.Any())
-        {
-            <div class="chart-container"><canvas id="chartEstado"></canvas></div>
-        }
-        else
-        {
-            <p class="no-data">Sin datos geográficos</p>
-        }
-    </div>
-    <div class="chart-box">
-        <div class="chart-box-title">Top 10 — Municipios</div>
-        @if (Model.ByMunicipio.Any())
-        {
-            <div class="chart-container"><canvas id="chartMunicipio"></canvas></div>
-        }
-        else
-        {
-            <p class="no-data">Sin datos geográficos</p>
-        }
-    </div>
-</div>
-
-<!-- Gender + Monthly Trend -->
-<div class="chart-row-equal">
-    <div class="chart-box">
-        <div class="chart-box-title">Género de Aspirantes</div>
-        @if (totalGender > 0)
-        {
-            <div class="chart-container-donut"><canvas id="chartGender"></canvas></div>
-        }
-        else
-        {
-            <p class="no-data">Sin datos de género</p>
-        }
-    </div>
-    <div class="chart-box">
-        <div class="chart-box-title">Tendencia Mensual</div>
-        @if (Model.MonthlyPreinscripciones.Any())
-        {
-            <div class="chart-container"><canvas id="chartMonthly"></canvas></div>
-        }
-        else
-        {
-            <p class="no-data">Sin datos</p>
-        }
-    </div>
-</div>
-
-<!-- Social indicators -->
-<div class="section-title">
-    <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z" /></svg>
-    Indicadores Sociodemográficos
-</div>
-<div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 28px;">
-    <div class="kpi-card">
-        <div class="kpi-info">
-            <div class="kpi-label">Con Discapacidad</div>
-            <div class="kpi-value" style="color: var(--purple);">@Model.ConDiscapacidad</div>
-            <div class="kpi-sub">de @Model.TotalSaludRecords registros</div>
-        </div>
-        <div class="kpi-icon" style="background: var(--purple-light);">
-            <svg viewBox="0 0 24 24" stroke="var(--purple)"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>
-        </div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-info">
-            <div class="kpi-label">Comunidad Indígena</div>
-            <div class="kpi-value" style="color: var(--warning);">@Model.ComunidadIndigena</div>
-        </div>
-        <div class="kpi-icon" style="background: var(--warning-light);">
-            <svg viewBox="0 0 24 24" stroke="var(--warning)"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-4 0h4" /></svg>
-        </div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-info">
-            <div class="kpi-label">Con Hijos</div>
-            <div class="kpi-value" style="color: var(--pink);">@Model.ConHijos</div>
-        </div>
-        <div class="kpi-icon" style="background: var(--pink-light);">
-            <svg viewBox="0 0 24 24" stroke="var(--pink)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-        </div>
-    </div>
-</div>
-
-<!-- Top Escuelas Table -->
+<!-- Table 5: Top Escuelas -->
 @if (Model.TopEscuelas.Any())
 {
     <div class="section-title">
@@ -412,34 +463,19 @@
         Top 10 — Escuelas de Procedencia
     </div>
     <div class="chart-box" style="margin-bottom: 24px;">
-        <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-            <button class="btn-export" onclick="exportTableToCSV('tblEscuelas', 'top_escuelas_procedencia.csv')">
-                <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-                Descargar Padrón de Aspirantes
-            </button>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+            <button class="btn-export" onclick="exportTableToCSV('tblEscuelas','escuelas_procedencia.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar</button>
         </div>
-        <div style="overflow-x: auto;">
+        <div style="overflow-x:auto;">
             <table class="data-table" id="tblEscuelas">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Escuela</th>
-                        <th>Estado</th>
-                        <th style="text-align: center;">Aspirantes</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>#</th><th>Escuela</th><th>Estado</th><th style="text-align:center;">Aspirantes</th></tr></thead>
                 <tbody>
                     @{
                         var rank = 1;
                     }
                     @foreach (var esc in Model.TopEscuelas)
                     {
-                        <tr>
-                            <td style="color: var(--text-muted); font-weight: 600;">@rank</td>
-                            <td style="font-weight: 500; color: var(--text-primary);">@esc.EscuelaNombre</td>
-                            <td>@esc.Estado</td>
-                            <td style="text-align: center;"><span class="badge badge-accent">@esc.Count</span></td>
-                        </tr>
+                        <tr><td style="color:var(--text-muted);font-weight:600;">@rank</td><td style="font-weight:500;color:var(--text-primary);">@esc.EscuelaNombre</td><td>@esc.Estado</td><td style="text-align:center;"><span class="badge badge-accent">@esc.Count</span></td></tr>
                         rank++;
                     }
                 </tbody>
@@ -448,66 +484,63 @@
     </div>
 }
 
-<!-- Recent Preinscripciones -->
+<!-- Table 6: Indicadores Sociodemográficos -->
+<div class="section-title">
+    <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z" /></svg>
+    Indicadores Sociodemográficos
+</div>
+<div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 24px;">
+    <div class="kpi-card"><div><div class="kpi-label">Con Discapacidad</div><div class="kpi-value" style="color:var(--purple);">@Model.ConDiscapacidad</div><div class="kpi-sub">de @Model.TotalSaludRecords registros</div></div><div class="kpi-icon" style="background:var(--purple-light);"><svg viewBox="0 0 24 24" stroke="var(--purple)"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Comunidad Indígena</div><div class="kpi-value" style="color:var(--warning);">@Model.ComunidadIndigena</div></div><div class="kpi-icon" style="background:var(--warning-light);"><svg viewBox="0 0 24 24" stroke="var(--warning)"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-4 0h4" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Con Hijos</div><div class="kpi-value" style="color:var(--pink);">@Model.ConHijos</div></div><div class="kpi-icon" style="background:var(--pink-light);"><svg viewBox="0 0 24 24" stroke="var(--pink)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg></div></div>
+</div>
+
+<!-- Table 7: Últimas Preinscripciones -->
 @if (Model.RecentPreinscripciones.Any())
 {
     <div class="section-title">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-        Estado de Trámite de Aspirantes (Recientes)
+        Últimas Preinscripciones
     </div>
     <div class="chart-box">
         <div class="filter-row">
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <span class="filter-label">Filtrar por estatus:</span>
-                <select onchange="filterTableByColumn(this.value, 'tblRecent', 5)">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <label style="font-size:13px;font-weight:600;color:var(--text-secondary);">Estatus:</label>
+                <select onchange="filterTableByColumn(this.value,'tblRecent',5)">
                     <option value="">Todos</option>
                     @foreach (var s in Model.PreinscripcionesByStatus)
                     {
                         <option value="@s.Status">@s.Status</option>
                     }
                 </select>
+                <label style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-left:8px;">Carrera:</label>
+                <select onchange="filterTableByColumn(this.value,'tblRecent',2)">
+                    <option value="">Todas</option>
+                    @foreach (var c in Model.PreinscripcionesByCareer)
+                    {
+                        <option value="@c.CareerName">@c.CareerName</option>
+                    }
+                </select>
             </div>
-            <button class="btn-export" onclick="exportTableToCSV('tblRecent', 'aspirantes_recientes.csv')">
-                <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-                Descargar Padrón de Aspirantes
-            </button>
+            <button class="btn-export" onclick="exportTableToCSV('tblRecent','preinscripciones_recientes.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Descargar Padrón</button>
         </div>
         <div class="record-count" id="tblRecentCount">Mostrando 1 a @Model.RecentPreinscripciones.Count de @Model.RecentPreinscripciones.Count registros</div>
-        <div style="overflow-x: auto;">
+        <div style="overflow-x:auto;">
             <table class="data-table" id="tblRecent">
-                <thead>
-                    <tr>
-                        <th>Folio</th>
-                        <th>Nombre del Aspirante</th>
-                        <th>Carrera Solicitada</th>
-                        <th style="text-align: center;">Promedio</th>
-                        <th>Preparatoria de Origen</th>
-                        <th style="text-align: center;">Estatus</th>
-                        <th style="text-align: right;">Fecha Registro</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Folio</th><th>Nombre</th><th>Carrera</th><th style="text-align:center;">Promedio</th><th>Estado</th><th style="text-align:center;">Estatus</th><th style="text-align:right;">Fecha</th></tr></thead>
                 <tbody>
                     @foreach (var item in Model.RecentPreinscripciones)
                     {
-                        var statusClass = item.Estatus switch
-                        {
-                                        "Aceptado" or "Aceptada" => "badge-success",
-                                        "Pendiente" => "badge-warning",
-                                        "Inscrito" => "badge-accent",
-                                        "Rechazado" or "Rechazada" => "badge-danger",
-                            _ => "badge-info"
-                        };
-                        var promedioClass = item.Promedio >= 9 ? "badge-success" :
-                        item.Promedio >= 8 ? "badge-accent" :
-                        item.Promedio >= 7 ? "badge-warning" : "badge-danger";
+                        var sc = item.Estatus switch { "Aceptado" => "badge-success", "Pendiente" => "badge-warning", "Inscrito" => "badge-accent", "Rechazado" => "badge-danger", _ => "badge-info" };
+                        var pc = item.Promedio >= 9 ? "badge-success" : item.Promedio >= 8 ? "badge-accent" : item.Promedio >= 7 ? "badge-warning" : "badge-danger";
                         <tr>
-                            <td style="font-weight: 600; color: var(--accent);">@item.Folio</td>
-                            <td style="font-weight: 500; color: var(--text-primary);">@item.Nombre</td>
-                            <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@item.Carrera</td>
-                            <td style="text-align: center;"><span class="badge @promedioClass">@item.Promedio</span></td>
+                            <td style="font-weight:600;color:var(--accent);">@item.Folio</td>
+                            <td style="font-weight:500;color:var(--text-primary);">@item.Nombre</td>
+                            <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@item.Carrera</td>
+                            <td style="text-align:center;"><span class="badge @pc">@item.Promedio</span></td>
                             <td>@item.Estado</td>
-                            <td style="text-align: center;"><span class="badge @statusClass">@item.Estatus</span></td>
-                            <td style="text-align: right; font-size: 12px; color: var(--text-muted);">@item.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td style="text-align:center;"><span class="badge @sc">@item.Estatus</span></td>
+                            <td style="text-align:right;font-size:12px;color:var(--text-muted);">@item.Fecha.ToString("dd/MM/yyyy")</td>
                         </tr>
                     }
                 </tbody>
@@ -526,175 +559,47 @@
         Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
         Chart.defaults.font.size = 12;
 
-        var dlBar = { anchor: 'end', align: 'top', color: '#1a2b25', font: { weight: '700', size: 13 }, offset: 2 };
-        var dlBarH = { anchor: 'end', align: 'right', color: '#1a2b25', font: { weight: '700', size: 13 }, offset: 6 };
-        var dlDonut = { color: '#fff', font: { weight: '700', size: 14 }, formatter: function(v,ctx) { var t=ctx.dataset.data.reduce(function(a,b){return a+b},0); var p=t>0?Math.round(v/t*100):0; return p>5?p+'%':''; } };
-        var palette = ['#0d9e7a','#e84393','#f0b429','#22c3a6','#8b5cf6','#3b82f6','#ef4444','#06b6d4','#84cc16','#f97316'];
-
-        // Funnel bar chart
-        @if (Model.PreinscripcionesByStatus.Any())
-        {
-                <text>
-                new Chart(document.getElementById('chartFunnel'), {
-                    type: 'bar',
-                    data: {
-                        labels: [@Html.Raw(string.Join(",", Model.PreinscripcionesByStatus.Select(s => $"'{s.Status}'")))],
-                        datasets: [{
-                            data: [@string.Join(",", Model.PreinscripcionesByStatus.Select(s => s.Count))],
-                            backgroundColor: ['#22c3a6','#f0b429','#e84393','#ef4444','#8b5cf6','#3b82f6'],
-                            borderRadius: 4, borderSkipped: false, maxBarThickness: 55
-                        }]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { display: false }, datalabels: dlBar },
-                        scales: { x: { grid: { display: false }, ticks: { font: { size: 11 } } }, y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { precision: 0 } } }
-                    }
-                });
-                </text>
-        }
-
-        // Career donut
         @if (Model.PreinscripcionesByCareer.Any())
         {
-                <text>
-                new Chart(document.getElementById('chartCareerDonut'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: [@Html.Raw(string.Join(",", Model.PreinscripcionesByCareer.Select(c => $"'{c.CareerName}'")))],
-                        datasets: [{ data: [@string.Join(",", Model.PreinscripcionesByCareer.Select(c => c.Count))], backgroundColor: palette, borderWidth: 0 }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, cutout: '58%', plugins: { legend: { position: 'right', labels: { padding: 10, usePointStyle: true, pointStyle: 'rectRounded', font: { size: 11 } } }, datalabels: dlDonut } }
-                });
-                </text>
+            <text>
+            new Chart(document.getElementById('chartCareer'),{type:'bar',data:{labels:[@Html.Raw(string.Join(",", Model.PreinscripcionesByCareer.Select(c => $"'{c.CareerName}'")))],datasets:[{data:[@string.Join(",", Model.PreinscripcionesByCareer.Select(c => c.Count))],backgroundColor:'#22c3a6',borderRadius:4,borderSkipped:false,maxBarThickness:36}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:{anchor:'end',align:'right',color:'#1a2b25',font:{weight:'700',size:13},offset:6}},scales:{x:{display:false,grid:{display:false}},y:{grid:{display:false}}},layout:{padding:{right:40}}}});
+            </text>
         }
 
-        // Promedio bar
-        @if (Model.PromedioDistribution.Any())
+        @if (Model.PreinscripcionesByStatus.Any())
         {
-                <text>
-                new Chart(document.getElementById('chartPromedio'), {
-                    type: 'bar',
-                    data: {
-                        labels: [@Html.Raw(string.Join(",", Model.PromedioDistribution.Select(p => $"'{p.Range}'")))],
-                        datasets: [{ data: [@string.Join(",", Model.PromedioDistribution.Select(p => p.Count))], backgroundColor: '#22c3a6', borderRadius: 4, borderSkipped: false, maxBarThickness: 50 }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: dlBar }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { precision: 0 } } } }
-                });
-                </text>
-        }
-
-        // Medio difusion donut
-        @if (Model.ByMedioDifusion.Any())
-        {
-                <text>
-                new Chart(document.getElementById('chartMedio'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: [@Html.Raw(string.Join(",", Model.ByMedioDifusion.Select(m => $"'{m.Status}'")))],
-                        datasets: [{ data: [@string.Join(",", Model.ByMedioDifusion.Select(m => m.Count))], backgroundColor: palette, borderWidth: 0 }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, cutout: '58%', plugins: { legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'rectRounded', font: { size: 11 } } }, datalabels: dlDonut } }
-                });
-                </text>
-        }
-
-        // Estado bar
-        @if (Model.ByEstado.Any())
-        {
-                <text>
-                new Chart(document.getElementById('chartEstado'), {
-                    type: 'bar',
-                    data: {
-                        labels: [@Html.Raw(string.Join(",", Model.ByEstado.Select(e => $"'{e.Name}'")))],
-                        datasets: [{ data: [@string.Join(",", Model.ByEstado.Select(e => e.Count))], backgroundColor: '#22c3a6', borderRadius: 4, borderSkipped: false, maxBarThickness: 50 }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: dlBar }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { precision: 0 } } } }
-                });
-                </text>
-        }
-
-        // Municipio horizontal bar
-        @if (Model.ByMunicipio.Any())
-        {
-                <text>
-                new Chart(document.getElementById('chartMunicipio'), {
-                    type: 'bar',
-                    data: {
-                        labels: [@Html.Raw(string.Join(",", Model.ByMunicipio.Select(m => $"'{m.Name}'")))],
-                        datasets: [{ data: [@string.Join(",", Model.ByMunicipio.Select(m => m.Count))], backgroundColor: '#e84393', borderRadius: 4, borderSkipped: false, maxBarThickness: 36 }]
-                    },
-                    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: dlBarH }, scales: { x: { display: false, grid: { display: false } }, y: { grid: { display: false } } }, layout: { padding: { right: 40 } } }
-                });
-                </text>
-        }
-
-        // Gender donut
-        @if (totalGender > 0)
-        {
-                <text>
-                new Chart(document.getElementById('chartGender'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Masculino','Femenino'@(Model.OtherGenderCount > 0 ? ",'Otro'" : "")],
-                        datasets: [{ data: [@Model.MaleCount,@Model.FemaleCount@(Model.OtherGenderCount > 0 ? $",{Model.OtherGenderCount}" : "")], backgroundColor: ['#22c3a6','#f0b429'@(Model.OtherGenderCount > 0 ? ",'#c4c4c4'" : "")], borderWidth: 0 }]
-                    },
-                    options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true, pointStyle: 'rectRounded', font: { size: 12 } } }, datalabels: dlDonut } }
-                });
-                </text>
-        }
-
-        // Monthly trend
-        @if (Model.MonthlyPreinscripciones.Any())
-        {
-                <text>
-                new Chart(document.getElementById('chartMonthly'), {
-                    type: 'bar',
-                    data: {
-                        labels: [@Html.Raw(string.Join(",", Model.MonthlyPreinscripciones.Select(m => $"'{m.Month} {m.Year}'")))],
-                        datasets: [
-                            { label: 'Preinscripciones', data: [@string.Join(",", Model.MonthlyPreinscripciones.Select(m => m.Count))], backgroundColor: '#22c3a6', borderRadius: 4, borderSkipped: false, maxBarThickness: 30 },
-                            { label: 'Inscripciones', data: [@string.Join(",", Model.MonthlyInscripciones.Select(m => m.Count))], backgroundColor: '#e84393', borderRadius: 4, borderSkipped: false, maxBarThickness: 30 }
-                        ]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { labels: { usePointStyle: true, pointStyle: 'rectRounded', padding: 20 } }, datalabels: dlBar },
-                        scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(0,0,0,0.06)' }, ticks: { precision: 0 } } }
-                    }
-                });
-                </text>
+            <text>
+            new Chart(document.getElementById('chartStatus'),{type:'doughnut',data:{labels:[@Html.Raw(string.Join(",", Model.PreinscripcionesByStatus.Select(s => $"'{s.Status}'")))],datasets:[{data:[@string.Join(",", Model.PreinscripcionesByStatus.Select(s => s.Count))],backgroundColor:['#22c3a6','#f0b429','#0d9e7a','#ef4444','#8b5cf6'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:20,usePointStyle:true,pointStyle:'rectRounded',font:{size:12}}},datalabels:{color:'#fff',font:{weight:'700',size:14},formatter:function(v,ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b},0);var p=t>0?Math.round(v/t*100):0;return p>5?p+'%':'';}}}}});
+            </text>
         }
 
         function filterTableByColumn(value, tableId, colIndex) {
             var table = document.getElementById(tableId);
+            if (!table) return;
+            if (!window._filters) window._filters = {};
+            if (!window._filters[tableId]) window._filters[tableId] = {};
+            if (value) { window._filters[tableId][colIndex] = value; }
+            else { delete window._filters[tableId][colIndex]; }
             var rows = table.querySelectorAll('tbody tr');
             var visible = 0;
             rows.forEach(function(row) {
-                var cell = row.cells[colIndex];
-                if (!value || (cell && cell.textContent.trim() === value)) { row.style.display = ''; visible++; }
-                else { row.style.display = 'none'; }
+                var show = true;
+                for (var ci in window._filters[tableId]) {
+                    var filterVal = window._filters[tableId][ci];
+                    var cell = row.cells[parseInt(ci)];
+                    if (cell && cell.textContent.trim().indexOf(filterVal) === -1) { show = false; break; }
+                }
+                row.style.display = show ? '' : 'none';
+                if (show) visible++;
             });
             var countEl = document.getElementById(tableId + 'Count');
             if (countEl) countEl.textContent = 'Mostrando 1 a ' + visible + ' de ' + rows.length + ' registros';
         }
 
-        function exportTableToCSV(tableId, filename) {
-            var table = document.getElementById(tableId);
-            var rows = table.querySelectorAll('tr');
-            var csv = [];
-            rows.forEach(function(row) {
-                if (row.style.display === 'none') return;
-                var cols = row.querySelectorAll('th, td');
-                var rowData = [];
-                cols.forEach(function(col) { rowData.push('"' + col.textContent.trim().replace(/"/g, '""') + '"'); });
-                csv.push(rowData.join(','));
-            });
-            var blob = new Blob(['\uFEFF' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
-            var link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.click();
+        function exportTableToCSV(tid, fn) {
+            var t = document.getElementById(tid); var r = t.querySelectorAll('tr'); var c = [];
+            r.forEach(function(row) { if (row.style.display === 'none') return; var cols = row.querySelectorAll('th,td'); var d = []; cols.forEach(function(col) { d.push('"' + col.textContent.trim().replace(/\n/g,' ').replace(/"/g,'""') + '"'); }); c.push(d.join(',')); });
+            var b = new Blob(['\uFEFF' + c.join('\n')], { type: 'text/csv;charset=utf-8;' }); var l = document.createElement('a'); l.href = URL.createObjectURL(b); l.download = fn; l.click();
         }
     </script>
 }

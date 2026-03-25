@@ -2,6 +2,12 @@
 {
     public class TramitesViewModel
     {
+
+        // Filters
+        public int SelectedYear { get; set; }
+        public int SelectedCuatrimestre { get; set; }
+        public List<int> AvailableYears { get; set; } = new();
+
         // KPI Cards
         public int TotalSolicitudes { get; set; }
         public int Pendientes { get; set; }

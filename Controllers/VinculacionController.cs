@@ -3,11 +3,11 @@ using UTTN.Dashboard.Services.Interfaces;
 
 namespace UTTN.Dashboard.Controllers
 {
-    public class HomeController : Controller
+    public class VinculacionController : Controller
     {
         private readonly IDashboardService _dashboardService;
 
-        public HomeController(IDashboardService dashboardService)
+        public VinculacionController(IDashboardService dashboardService)
         {
             _dashboardService = dashboardService;
         }
@@ -16,13 +16,13 @@ namespace UTTN.Dashboard.Controllers
         {
             try
             {
-                var model = await _dashboardService.GetRectorateDataAsync(year, cuatrimestre);
+                var model = await _dashboardService.GetVinculacionDataAsync(year, cuatrimestre);
                 return View(model);
             }
             catch (Exception ex)
             {
                 ViewBag.Error = ex.Message;
-                return View(new ViewModels.Dashboard.RectorateViewModel());
+                return View(new ViewModels.Dashboard.VinculacionViewModel());
             }
         }
     }

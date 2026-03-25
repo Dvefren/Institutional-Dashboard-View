@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Aspirantes — Proceso de Nuevo Ingreso";
     var totalGender = Model.MaleCount + Model.FemaleCount;
+    var cuatNames = new Dictionary<int, string> { { 0, "Todo el año" }, { 1, "Ene — Abr" }, { 2, "May — Ago" }, { 3, "Sep — Dic" } };
 }
 
 <style>
@@ -9,14 +10,14 @@
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 16px;
-        margin-bottom: 28px;
+        margin-bottom: 24px;
     }
 
     .kpi-card {
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: var(--radius);
-        padding: 20px 22px;
+        padding: 18px 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -29,26 +30,25 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .kpi-card .kpi-value {
-            font-size: 32px;
+            font-size: 30px;
             font-weight: 700;
             line-height: 1;
-            letter-spacing: -0.02em;
         }
 
         .kpi-card .kpi-sub {
             font-size: 11px;
             color: var(--text-muted);
-            margin-top: 6px;
+            margin-top: 4px;
         }
 
         .kpi-card .kpi-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -56,8 +56,8 @@
         }
 
             .kpi-card .kpi-icon svg {
-                width: 24px;
-                height: 24px;
+                width: 22px;
+                height: 22px;
                 stroke-width: 1.8;
                 stroke-linecap: round;
                 stroke-linejoin: round;
@@ -70,7 +70,7 @@
         text-transform: uppercase;
         letter-spacing: 0.03em;
         color: var(--text-primary);
-        margin-bottom: 16px;
+        margin-bottom: 14px;
         display: flex;
         align-items: center;
         gap: 10px;
@@ -93,18 +93,11 @@
         margin-bottom: 24px;
     }
 
-    .chart-row-equal {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-
     .chart-box {
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: var(--radius);
-        padding: 22px;
+        padding: 20px;
         box-shadow: var(--shadow-sm);
     }
 
@@ -114,46 +107,106 @@
         text-transform: uppercase;
         letter-spacing: 0.03em;
         color: var(--text-primary);
-        margin-bottom: 18px;
+        margin-bottom: 16px;
     }
 
     .chart-container {
         position: relative;
         width: 100%;
-        height: 300px;
+        height: 280px;
     }
 
     .chart-container-donut {
         position: relative;
         width: 100%;
-        height: 280px;
+        height: 260px;
     }
 
-    .filter-row {
+    .filter-bar {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px 20px;
+        margin-bottom: 20px;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 12px;
+        gap: 16px;
         flex-wrap: wrap;
-        gap: 10px;
+        box-shadow: var(--shadow-sm);
     }
 
-        .filter-row select {
+        .filter-bar label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .filter-bar select {
             padding: 8px 14px;
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
             font-family: inherit;
             font-size: 13px;
             color: var(--text-primary);
-            background: var(--bg-card);
+            background: white;
             cursor: pointer;
             outline: none;
         }
 
-        .filter-row .filter-label {
+        .filter-bar .btn-apply {
+            padding: 8px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
             font-size: 13px;
             font-weight: 600;
+            cursor: pointer;
+        }
+
+        .filter-bar .btn-clear {
+            padding: 8px 16px;
+            background: var(--bg-input);
             color: var(--text-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+    .active-filter {
+        background: var(--accent-light);
+        border: 1px solid var(--accent);
+        border-radius: var(--radius-sm);
+        padding: 8px 16px;
+        font-size: 12px;
+        color: var(--accent);
+        font-weight: 600;
+        margin-bottom: 16px;
+        display: inline-block;
+    }
+
+    .filter-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .filter-row select {
+            padding: 7px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            color: var(--text-primary);
+            background: white;
+            cursor: pointer;
+            outline: none;
         }
 
     .record-count {
@@ -165,48 +218,57 @@
 
 @if (ViewBag.Error != null)
 {
-    <div style="background: var(--danger-light); border: 1px solid rgba(239,68,68,0.2); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 20px; color: var(--danger); font-size: 13px;">
-        <strong>Error:</strong> @ViewBag.Error
-    </div>
+    <div style="background: var(--danger-light); border: 1px solid rgba(239,68,68,0.2); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 20px; color: var(--danger); font-size: 13px;"><strong>Error:</strong> @ViewBag.Error</div>
+}
+
+<!-- Period Filter -->
+<form method="get" class="filter-bar">
+    <label>Año:</label>
+    <select name="year">@foreach (var y in Model.AvailableYears) { if (y == Model.SelectedYear) {
+    <option value="@y" selected="selected">@y</option>
+        } else
+    {
+
+        <option value="@y">@y</option>
+    } }
+</select>
+    <label>Cuatrimestre:</label>
+    <select name="cuatrimestre">@{
+        var cuatOptions = new Dictionary<int, string> { { 0, "Todo el año" }, { 1, "Ene — Abr" }, { 2, "May — Ago" }, { 3, "Sep — Dic" } };
+        }
+ @foreach (var opt in cuatOptions)
+{
+    if (opt.Key == Model.SelectedCuatrimestre)
+    {
+            <option value="@opt.Key" selected="selected">@opt.Value</option>
+        }
+        else
+        {
+
+            <option value="@opt.Key">@opt.Value</option>
+        }
+    }
+</select>
+    <button type="submit" class="btn-apply">Aplicar</button>
+    <a href="@Url.Action("Index", "Aspirantes")" class="btn-clear">Limpiar</a>
+</form>
+@if (Model.SelectedCuatrimestre > 0)
+{
+    <div class="active-filter">Filtro activo: Año @Model.SelectedYear, @cuatNames[Model.SelectedCuatrimestre]</div>
 }
 
 <!-- KPI Cards -->
 <div class="kpi-grid">
-    <div class="kpi-card">
-        <div class="kpi-info">
-            <div class="kpi-label">Total Aspirantes</div>
-            <div class="kpi-value" style="color: var(--accent);">@Model.TotalAspirantes</div>
-        </div>
-        <div class="kpi-icon" style="background: var(--accent-light);"><svg viewBox="0 0 24 24" stroke="var(--accent)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg></div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-info">
-            <div class="kpi-label">Aceptados</div>
-            <div class="kpi-value" style="color: var(--success);">@Model.Aceptados</div>
-        </div>
-        <div class="kpi-icon" style="background: var(--success-light);"><svg viewBox="0 0 24 24" stroke="var(--success)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg></div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-info">
-            <div class="kpi-label">Promedio General</div>
-            <div class="kpi-value" style="color: var(--purple);">@Model.PromedioGeneral</div>
-        </div>
-        <div class="kpi-icon" style="background: var(--purple-light);"><svg viewBox="0 0 24 24" stroke="var(--purple)"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" /></svg></div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-info">
-            <div class="kpi-label">Pendientes</div>
-            <div class="kpi-value" style="color: var(--warning);">@Model.Pendientes</div>
-            <div class="kpi-sub">@Model.DocIncompleta doc. incompleta</div>
-        </div>
-        <div class="kpi-icon" style="background: var(--warning-light);"><svg viewBox="0 0 24 24" stroke="var(--warning)"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg></div>
-    </div>
+    <div class="kpi-card"><div><div class="kpi-label">Total Aspirantes</div><div class="kpi-value" style="color:var(--accent);">@Model.TotalAspirantes</div></div><div class="kpi-icon" style="background:var(--accent-light);"><svg viewBox="0 0 24 24" stroke="var(--accent)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Aceptados</div><div class="kpi-value" style="color:var(--success);">@Model.Aceptados</div></div><div class="kpi-icon" style="background:var(--success-light);"><svg viewBox="0 0 24 24" stroke="var(--success)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Promedio General</div><div class="kpi-value" style="color:var(--purple);">@Model.PromedioGeneral</div></div><div class="kpi-icon" style="background:var(--purple-light);"><svg viewBox="0 0 24 24" stroke="var(--purple)"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Pendientes</div><div class="kpi-value" style="color:var(--warning);">@Model.Pendientes</div><div class="kpi-sub">@Model.DocIncompleta doc. incompleta</div></div><div class="kpi-icon" style="background:var(--warning-light);"><svg viewBox="0 0 24 24" stroke="var(--warning)"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg></div></div>
 </div>
 
-<!-- Funnel + Career donut -->
+<!-- 2 Charts: Status funnel (bar) + Career (donut) -->
 <div class="chart-row">
     <div class="chart-box">
-        <div class="chart-box-title">Embudo de Conversión (Drop-Off)</div>
+        <div class="chart-box-title">Embudo de Conversión</div>
         @if (Model.ByStatus.Any())
         {
             <div class="chart-container"><canvas id="chartFunnel"></canvas></div>
@@ -214,7 +276,7 @@
         else
         {
 
-            <p class="no-data">Sin datos</p>
+            <p class="no-data">Sin datos para este periodo</p>
         }
     </div>
     <div class="chart-box">
@@ -231,172 +293,182 @@
     </div>
 </div>
 
-<!-- Promedio + Tipo Preparatoria -->
-<div class="chart-row-equal">
-    <div class="chart-box">
-        <div class="chart-box-title">Distribución de Promedios</div>
-        @if (Model.PromedioDistribution.Any())
-        {
-            <div class="chart-container"><canvas id="chartPromedio"></canvas></div>
-        }
-        else
-        {
-
-            <p class="no-data">Sin datos</p>
-        }
-    </div>
-    <div class="chart-box">
-        <div class="chart-box-title">Tipo de Preparatoria</div>
-        @if (Model.ByTipoPrepa.Any())
-        {
-            <div class="chart-container-donut"><canvas id="chartTipoPrepa"></canvas></div>
-        }
-        else
-        {
-
-            <p class="no-data">Sin datos</p>
-        }
-    </div>
-</div>
-
-<!-- Geographic + Medio difusion -->
-<div class="chart-row-equal">
-    <div class="chart-box">
-        <div class="chart-box-title">Origen por Municipio</div>
-        @if (Model.ByMunicipio.Any())
-        {
-            <div class="chart-container"><canvas id="chartMunicipio"></canvas></div>
-        }
-        else
-        {
-
-            <p class="no-data">Sin datos</p>
-        }
-    </div>
-    <div class="chart-box">
-        <div class="chart-box-title">Medio de Difusión</div>
-        @if (Model.ByMedioDifusion.Any())
-        {
-            <div class="chart-container-donut"><canvas id="chartMedio"></canvas></div>
-        }
-        else
-        {
-
-            <p class="no-data">Sin datos</p>
-        }
-    </div>
-</div>
-
-<!-- Gender + Monthly -->
-<div class="chart-row-equal">
-    <div class="chart-box">
-        <div class="chart-box-title">Género de Aspirantes</div>
-        @if (totalGender > 0)
-        {
-            <div class="chart-container-donut"><canvas id="chartGender"></canvas></div>
-        }
-        else
-        {
-
-            <p class="no-data">Sin datos</p>
-        }
-    </div>
-    <div class="chart-box">
-        <div class="chart-box-title">Tendencia Mensual de Registros</div>
-        @if (Model.MonthlyTrend.Any())
-        {
-            <div class="chart-container"><canvas id="chartMonthly"></canvas></div>
-        }
-        else
-        {
-
-            <p class="no-data">Sin datos</p>
-        }
-    </div>
-</div>
-
-<!-- Social indicators -->
-<div class="section-title">
-    <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z" /></svg>
-    Indicadores Sociodemográficos
-</div>
-<div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 24px;">
-    <div class="kpi-card"><div class="kpi-info"><div class="kpi-label">Trabajan</div><div class="kpi-value" style="color: var(--accent);">@Model.Trabajan</div><div class="kpi-sub">de @Model.TotalOtros aspirantes</div></div><div class="kpi-icon" style="background: var(--accent-light);"><svg viewBox="0 0 24 24" stroke="var(--accent)"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></svg></div></div>
-    <div class="kpi-card"><div class="kpi-info"><div class="kpi-label">Con Beca Previa</div><div class="kpi-value" style="color: var(--success);">@Model.ConBeca</div></div><div class="kpi-icon" style="background: var(--success-light);"><svg viewBox="0 0 24 24" stroke="var(--success)"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg></div></div>
-    <div class="kpi-card"><div class="kpi-info"><div class="kpi-label">Origen Indígena</div><div class="kpi-value" style="color: var(--warning);">@Model.OrigenIndigena</div><div class="kpi-sub">@Model.HablaLenguaIndigena hablan lengua indígena</div></div><div class="kpi-icon" style="background: var(--warning-light);"><svg viewBox="0 0 24 24" stroke="var(--warning)"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-4 0h4" /></svg></div></div>
-</div>
-<div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 24px;">
-    <div class="kpi-card"><div class="kpi-info"><div class="kpi-label">Con Discapacidad</div><div class="kpi-value" style="color: var(--purple);">@Model.ConDiscapacidad</div></div><div class="kpi-icon" style="background: var(--purple-light);"><svg viewBox="0 0 24 24" stroke="var(--purple)"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg></div></div>
-    <div class="kpi-card"><div class="kpi-info"><div class="kpi-label">Con Enfermedad</div><div class="kpi-value" style="color: var(--danger);">@Model.ConEnfermedad</div></div><div class="kpi-icon" style="background: var(--danger-light);"><svg viewBox="0 0 24 24" stroke="var(--danger)"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg></div></div>
-    <div class="kpi-card"><div class="kpi-info"><div class="kpi-label">Nacionalidad Extranjera</div><div class="kpi-value" style="color: var(--info);">@(Model.ByNacionalidad.Where(n => n.Status != "Mexicana").Sum(n => n.Count))</div></div><div class="kpi-icon" style="background: var(--info-light);"><svg viewBox="0 0 24 24" stroke="var(--info)"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg></div></div>
-</div>
-
-<!-- Escuelas Table -->
-@if (Model.TopEscuelas.Any())
+<!-- Table 1: Aspirantes por Carrera -->
+@if (Model.ByCareer.Any())
 {
-    <div class="section-title"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg> Top 10 — Escuelas de Procedencia</div>
-    <div class="chart-box" style="margin-bottom: 24px;">
-        <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;"><button class="btn-export" onclick="exportTableToCSV('tblEscuelas','top_escuelas_aspirantes.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar a Excel</button></div>
-        <div style="overflow-x: auto;">
-            <table class="data-table" id="tblEscuelas">
-                <thead><tr><th>#</th><th>Escuela</th><th>Estado</th><th style="text-align:center;">Aspirantes</th></tr></thead>
-                <tbody>
-                    @{
-                        var rank = 1;
-                    }
-                    @foreach (var esc in Model.TopEscuelas)
-                    {
-                        <tr><td style="color:var(--text-muted);font-weight:600;">@rank</td><td style="font-weight:500;color:var(--text-primary);">@esc.EscuelaNombre</td><td>@esc.Estado</td><td style="text-align:center;"><span class="badge badge-accent">@esc.Count</span></td></tr>
-                        rank++;
-                    }
-                </tbody>
+    <div class="section-title"><svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg> Aspirantes por Carrera</div>
+    <div class="chart-box" style="margin-bottom:24px;">
+        <div class="filter-row">
+            <div style="display:flex;gap:10px;align-items:center;"><label style="font-size:13px;font-weight:600;color:var(--text-secondary);">Carrera:</label><select onchange="filterTableByColumn(this.value,'tblCarreras',0)"><option value="">Todas</option>@foreach (var c in Model.ByCareer) {
+            <option value="@c.CareerName">@c.CareerName</option>
+        }
+</select></div>
+        <button class="btn-export" onclick="exportTableToCSV('tblCarreras','aspirantes_carrera.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar</button>
+    </div>
+    <div class="record-count" id="tblCarrerasCount">Mostrando 1 a @Model.ByCareer.Count de @Model.ByCareer.Count registros</div>
+    <div style="overflow-x:auto;">
+        <table class="data-table" id="tblCarreras">
+            <thead><tr><th>Carrera</th><th style="text-align:center;">Total</th><th style="text-align:center;">%</th></tr></thead>
+            <tbody>@foreach (var c in Model.ByCareer) {
+            <tr><td style="font-weight:500;color:var(--text-primary);">@c.CareerName</td><td style="text-align:center;"><span class="badge badge-accent">@c.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@c.Percentage%</span></td></tr>
+                        }
+</tbody>
+        </table>
+    </div>
+</div>
+}
+
+<!-- Table 2: Estatus + Tipo Prepa side by side -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    @if (Model.ByStatus.Any())
+    {
+        <div class="chart-box">
+            <div class="chart-box-title">Resumen por Estatus</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Estatus</th><th style="text-align:center;">Total</th><th style="text-align:center;">%</th></tr></thead>
+                    <tbody>
+                        @foreach (var s in Model.ByStatus)
+                        {
+                            var sc = s.Status switch { "Aceptado" => "badge-success", "Pendiente" => "badge-warning", "Ficha Pagada" => "badge-accent", "Examen Presentado" => "badge-info", "Documentación Incompleta" or "Rechazado" => "badge-danger", _ => "badge-neutral" };
+                            <tr><td style="font-weight:500;color:var(--text-primary);">@s.Status</td><td style="text-align:center;"><span class="badge @sc">@s.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@s.Percentage%</span></td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    @if (Model.ByTipoPrepa.Any())
+    {
+        <div class="chart-box">
+            <div class="chart-box-title">Tipo de Preparatoria</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Tipo</th><th style="text-align:center;">Total</th><th style="text-align:center;">%</th></tr></thead>
+                    <tbody>@foreach (var t in Model.ByTipoPrepa) {
+                    <tr><td style="font-weight:500;color:var(--text-primary);">@t.Status</td><td style="text-align:center;"><span class="badge badge-accent">@t.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@t.Percentage%</span></td></tr>
+                }
+</tbody>
             </table>
         </div>
     </div>
+        }
+</div>
+
+<!-- Table 3: Municipio + Medio Difusión side by side -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    @if (Model.ByMunicipio.Any())
+    {
+        <div class="chart-box">
+            <div class="chart-box-title">Top 10 Municipios</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Municipio</th><th style="text-align:center;">Total</th><th style="text-align:center;">%</th></tr></thead>
+                    <tbody>@foreach (var m in Model.ByMunicipio) {
+                    <tr><td style="font-weight:500;color:var(--text-primary);">@m.Name</td><td style="text-align:center;"><span class="badge badge-accent">@m.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@m.Percentage%</span></td></tr>
+                }
+</tbody>
+            </table>
+        </div>
+    </div>
+        }
+    @if (Model.ByMedioDifusion.Any())
+    {
+        <div class="chart-box">
+            <div class="chart-box-title">Medio de Difusión</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Medio</th><th style="text-align:center;">Total</th><th style="text-align:center;">%</th></tr></thead>
+                    <tbody>@foreach (var m in Model.ByMedioDifusion) {
+                    <tr><td style="font-weight:500;color:var(--text-primary);">@m.Status</td><td style="text-align:center;"><span class="badge badge-accent">@m.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@m.Percentage%</span></td></tr>
+                }
+</tbody>
+            </table>
+        </div>
+    </div>
+        }
+</div>
+
+<!-- Table 4: Escuelas -->
+@if (Model.TopEscuelas.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg> Top 10 — Escuelas de Procedencia</div>
+    <div class="chart-box" style="margin-bottom:24px;">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-export" onclick="exportTableToCSV('tblEscuelas','escuelas_aspirantes.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar</button></div>
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="tblEscuelas">
+                <thead><tr><th>#</th><th>Escuela</th><th>Estado</th><th style="text-align:center;">Aspirantes</th></tr></thead>
+                <tbody>@{
+                var rank = 1;
+            }
+ @foreach (var esc in Model.TopEscuelas)
+{
+                <tr><td style="color:var(--text-muted);font-weight:600;">@rank</td><td style="font-weight:500;color:var(--text-primary);">@esc.EscuelaNombre</td><td>@esc.Estado</td><td style="text-align:center;"><span class="badge badge-accent">@esc.Count</span></td></tr>
+                rank++;
+            }
+</tbody>
+        </table>
+    </div>
+</div>
 }
 
-<!-- Recent Aspirantes Table -->
+<!-- Table 5: Indicadores Sociodemográficos -->
+<div class="section-title"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z" /></svg> Indicadores Sociodemográficos</div>
+<div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
+    <div class="kpi-card"><div><div class="kpi-label">Trabajan</div><div class="kpi-value" style="color:var(--accent);">@Model.Trabajan</div><div class="kpi-sub">de @Model.TotalOtros aspirantes</div></div><div class="kpi-icon" style="background:var(--accent-light);"><svg viewBox="0 0 24 24" stroke="var(--accent)"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Con Beca</div><div class="kpi-value" style="color:var(--success);">@Model.ConBeca</div></div><div class="kpi-icon" style="background:var(--success-light);"><svg viewBox="0 0 24 24" stroke="var(--success)"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Origen Indígena</div><div class="kpi-value" style="color:var(--warning);">@Model.OrigenIndigena</div></div><div class="kpi-icon" style="background:var(--warning-light);"><svg viewBox="0 0 24 24" stroke="var(--warning)"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 0 0 1 1h3m10-11l2 2m-2-2v10a1 1 0 0 1-1 1h-3m-4 0h4" /></svg></div></div>
+</div>
+<div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
+    <div class="kpi-card"><div><div class="kpi-label">Con Discapacidad</div><div class="kpi-value" style="color:var(--purple);">@Model.ConDiscapacidad</div></div><div class="kpi-icon" style="background:var(--purple-light);"><svg viewBox="0 0 24 24" stroke="var(--purple)"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Con Enfermedad</div><div class="kpi-value" style="color:var(--danger);">@Model.ConEnfermedad</div></div><div class="kpi-icon" style="background:var(--danger-light);"><svg viewBox="0 0 24 24" stroke="var(--danger)"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Género Masculino</div><div class="kpi-value" style="color:var(--info);">@Model.MaleCount</div><div class="kpi-sub">@Model.FemaleCount femenino</div></div><div class="kpi-icon" style="background:var(--info-light);"><svg viewBox="0 0 24 24" stroke="var(--info)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg></div></div>
+</div>
+
+<!-- Table 6: Últimos Aspirantes -->
 @if (Model.RecentAspirantes.Any())
 {
     <div class="section-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg> Estado de Trámite de Aspirantes (Recientes)</div>
     <div class="chart-box">
         <div class="filter-row">
-            <div style="display:flex;gap:10px;align-items:center;">
-                <span class="filter-label">Filtrar por estatus:</span>
-                <select onchange="filterTableByColumn(this.value,'tblRecent',6)">
-                    <option value="">Todos</option>
-                    @foreach (var s in Model.ByStatus)
-                    {
-                        <option value="@s.Status">@s.Status</option>
-                    }
-                </select>
-            </div>
-            <button class="btn-export" onclick="exportTableToCSV('tblRecent','aspirantes_recientes.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Descargar Padrón</button>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <label style="font-size:13px;font-weight:600;color:var(--text-secondary);">Estatus:</label>
+                <select onchange="filterTableByColumn(this.value,'tblRecent',6)"><option value="">Todos</option>@foreach (var s in Model.ByStatus) {
+                <option value="@s.Status">@s.Status</option>
+            }
+</select>
+            <label style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-left:8px;">Carrera:</label>
+            <select onchange="filterTableByColumn(this.value,'tblRecent',2)"><option value="">Todas</option>@foreach (var c in Model.ByCareer) {
+            <option value="@c.CareerName">@c.CareerName</option>
+                        }
+</select>
         </div>
-        <div class="record-count" id="tblRecentCount">Mostrando 1 a @Model.RecentAspirantes.Count de @Model.RecentAspirantes.Count registros</div>
-        <div style="overflow-x: auto;">
-            <table class="data-table" id="tblRecent">
-                <thead><tr><th>Folio</th><th>Nombre</th><th>Carrera</th><th style="text-align:center;">Promedio</th><th>Preparatoria</th><th>Estado</th><th style="text-align:center;">Estatus</th><th style="text-align:right;">Fecha</th></tr></thead>
-                <tbody>
-                    @foreach (var item in Model.RecentAspirantes)
-                    {
-                        var sc = item.Estatus switch { "Aceptado" => "badge-success", "Pendiente" => "badge-warning", "Ficha Pagada" => "badge-accent", "Examen Presentado" => "badge-info", "Documentación Incompleta" => "badge-danger", "Rechazado" => "badge-danger", _ => "badge-neutral" };
-                        var pc = item.Promedio >= 9 ? "badge-success" : item.Promedio >= 8 ? "badge-accent" : item.Promedio >= 7 ? "badge-warning" : "badge-danger";
-                        <tr>
-                            <td style="font-weight:600;color:var(--accent);">@item.Folio</td>
-                            <td style="font-weight:500;color:var(--text-primary);">@item.Nombre</td>
-                            <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@item.Carrera</td>
-                            <td style="text-align:center;"><span class="badge @pc">@item.Promedio</span></td>
-                            <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@item.Preparatoria</td>
-                            <td>@item.Estado</td>
-                            <td style="text-align:center;"><span class="badge @sc">@item.Estatus</span></td>
-                            <td style="text-align:right;font-size:12px;color:var(--text-muted);">@item.Fecha.ToString("dd/MM/yyyy")</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+        <button class="btn-export" onclick="exportTableToCSV('tblRecent','aspirantes_recientes.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Descargar Padrón</button>
     </div>
+    <div class="record-count" id="tblRecentCount">Mostrando 1 a @Model.RecentAspirantes.Count de @Model.RecentAspirantes.Count registros</div>
+    <div style="overflow-x:auto;">
+        <table class="data-table" id="tblRecent">
+            <thead><tr><th>Folio</th><th>Nombre</th><th>Carrera</th><th style="text-align:center;">Promedio</th><th>Preparatoria</th><th>Estado</th><th style="text-align:center;">Estatus</th><th style="text-align:right;">Fecha</th></tr></thead>
+            <tbody>
+                @foreach (var item in Model.RecentAspirantes)
+                {
+                    var sc = item.Estatus switch { "Aceptado" => "badge-success", "Pendiente" => "badge-warning", "Ficha Pagada" => "badge-accent", "Examen Presentado" => "badge-info", "Documentación Incompleta" or "Rechazado" => "badge-danger", _ => "badge-neutral" };
+                    var pc = item.Promedio >= 9 ? "badge-success" : item.Promedio >= 8 ? "badge-accent" : item.Promedio >= 7 ? "badge-warning" : "badge-danger";
+                    <tr>
+                        <td style="font-weight:600;color:var(--accent);">@item.Folio</td>
+                        <td style="font-weight:500;color:var(--text-primary);">@item.Nombre</td>
+                        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@item.Carrera</td>
+                        <td style="text-align:center;"><span class="badge @pc">@item.Promedio</span></td>
+                        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@item.Preparatoria</td>
+                        <td>@item.Estado</td>
+                        <td style="text-align:center;"><span class="badge @sc">@item.Estatus</span></td>
+                        <td style="text-align:right;font-size:12px;color:var(--text-muted);">@item.Fecha.ToString("dd/MM/yyyy")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 }
 
 @section Scripts {
@@ -404,12 +476,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <script>
         Chart.register(ChartDataLabels);
-        Chart.defaults.color = '#8a9e95';
-        Chart.defaults.borderColor = 'rgba(0,0,0,0.06)';
-        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
-        Chart.defaults.font.size = 12;
+        Chart.defaults.color = '#8a9e95'; Chart.defaults.borderColor = 'rgba(0,0,0,0.06)'; Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif"; Chart.defaults.font.size = 12;
         var dlBar = { anchor:'end', align:'top', color:'#1a2b25', font:{weight:'700',size:13}, offset:2 };
-        var dlBarH = { anchor:'end', align:'right', color:'#1a2b25', font:{weight:'700',size:13}, offset:6 };
         var dlDonut = { color:'#fff', font:{weight:'700',size:14}, formatter:function(v,ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b},0);var p=t>0?Math.round(v/t*100):0;return p>5?p+'%':'';} };
         var palette = ['#0d9e7a','#e84393','#f0b429','#22c3a6','#8b5cf6','#3b82f6','#ef4444','#06b6d4','#84cc16','#f97316'];
 
@@ -427,49 +495,7 @@
             </text>
         }
 
-        @if (Model.PromedioDistribution.Any())
-        {
-            <text>
-            new Chart(document.getElementById('chartPromedio'),{type:'bar',data:{labels:[@Html.Raw(string.Join(",", Model.PromedioDistribution.Select(p => $"'{p.Range}'")))],datasets:[{data:[@string.Join(",", Model.PromedioDistribution.Select(p => p.Count))],backgroundColor:'#22c3a6',borderRadius:4,borderSkipped:false,maxBarThickness:50}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:dlBar},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{precision:0}}}}});
-            </text>
-        }
-
-        @if (Model.ByTipoPrepa.Any())
-        {
-            <text>
-            new Chart(document.getElementById('chartTipoPrepa'),{type:'doughnut',data:{labels:[@Html.Raw(string.Join(",", Model.ByTipoPrepa.Select(t => $"'{t.Status}'")))],datasets:[{data:[@string.Join(",", Model.ByTipoPrepa.Select(t => t.Count))],backgroundColor:palette,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true,pointStyle:'rectRounded',font:{size:11}}},datalabels:dlDonut}}});
-            </text>
-        }
-
-        @if (Model.ByMunicipio.Any())
-        {
-            <text>
-            new Chart(document.getElementById('chartMunicipio'),{type:'bar',data:{labels:[@Html.Raw(string.Join(",", Model.ByMunicipio.Select(m => $"'{m.Name}'")))],datasets:[{data:[@string.Join(",", Model.ByMunicipio.Select(m => m.Count))],backgroundColor:'#e84393',borderRadius:4,borderSkipped:false,maxBarThickness:36}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:dlBarH},scales:{x:{display:false,grid:{display:false}},y:{grid:{display:false}}},layout:{padding:{right:40}}}});
-            </text>
-        }
-
-        @if (Model.ByMedioDifusion.Any())
-        {
-            <text>
-            new Chart(document.getElementById('chartMedio'),{type:'doughnut',data:{labels:[@Html.Raw(string.Join(",", Model.ByMedioDifusion.Select(m => $"'{m.Status}'")))],datasets:[{data:[@string.Join(",", Model.ByMedioDifusion.Select(m => m.Count))],backgroundColor:palette,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true,pointStyle:'rectRounded',font:{size:11}}},datalabels:dlDonut}}});
-            </text>
-        }
-
-        @if (totalGender > 0)
-        {
-            <text>
-            new Chart(document.getElementById('chartGender'),{type:'doughnut',data:{labels:['Masculino','Femenino'],datasets:[{data:[@Model.MaleCount,@Model.FemaleCount],backgroundColor:['#22c3a6','#f0b429'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:20,usePointStyle:true,pointStyle:'rectRounded',font:{size:12}}},datalabels:dlDonut}}});
-            </text>
-        }
-
-        @if (Model.MonthlyTrend.Any())
-        {
-            <text>
-            new Chart(document.getElementById('chartMonthly'),{type:'bar',data:{labels:[@Html.Raw(string.Join(",", Model.MonthlyTrend.Select(m => $"'{m.Month} {m.Year}'")))],datasets:[{label:'Registros',data:[@string.Join(",", Model.MonthlyTrend.Select(m => m.Count))],backgroundColor:'#e84393',borderRadius:4,borderSkipped:false,maxBarThickness:45}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:dlBar},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{precision:0}}}}});
-            </text>
-        }
-
-        function filterTableByColumn(v,tid,ci){var t=document.getElementById(tid);var r=t.querySelectorAll('tbody tr');var vis=0;r.forEach(function(row){var c=row.cells[ci];if(!v||(c&&c.textContent.trim()===v)){row.style.display='';vis++;}else{row.style.display='none';}});var el=document.getElementById(tid+'Count');if(el)el.textContent='Mostrando 1 a '+vis+' de '+r.length+' registros';}
+        function filterTableByColumn(value,tableId,colIndex){var table=document.getElementById(tableId);if(!table)return;if(!window._filters)window._filters={};if(!window._filters[tableId])window._filters[tableId]={};if(value){window._filters[tableId][colIndex]=value;}else{delete window._filters[tableId][colIndex];}var rows=table.querySelectorAll('tbody tr');var visible=0;rows.forEach(function(row){var show=true;for(var ci in window._filters[tableId]){var fv=window._filters[tableId][ci];var cell=row.cells[parseInt(ci)];if(cell&&cell.textContent.trim().indexOf(fv)===-1){show=false;break;}}row.style.display=show?'':'none';if(show)visible++;});var el=document.getElementById(tableId+'Count');if(el)el.textContent='Mostrando 1 a '+visible+' de '+rows.length+' registros';}
         function exportTableToCSV(tid,fn){var t=document.getElementById(tid);var r=t.querySelectorAll('tr');var c=[];r.forEach(function(row){if(row.style.display==='none')return;var cols=row.querySelectorAll('th,td');var d=[];cols.forEach(function(col){d.push('"'+col.textContent.trim().replace(/\n/g,' ').replace(/"/g,'""')+'"');});c.push(d.join(','));});var b=new Blob(['\uFEFF'+c.join('\n')],{type:'text/csv;charset=utf-8;'});var l=document.createElement('a');l.href=URL.createObjectURL(b);l.download=fn;l.click();}
     </script>
 }

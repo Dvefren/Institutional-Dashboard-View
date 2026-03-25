@@ -553,7 +553,7 @@
                 <div class="nav-section-title">General</div>
                 <a href="@Url.Action("Index", "Home")" class="nav-item @IsActive("Home")">
                     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
-                    Rectoría
+                    Inicio
                 </a>
             </div>
 
@@ -571,11 +571,15 @@
                     <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                     Aspirantes
                 </a>
+                <a href="@Url.Action("Index", "Vinculacion")" class="nav-item @IsActive("Vinculacion")">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></svg>
+                    Vinculación
+                </a>
             </div>
 
             <div class="nav-section">
                 <div class="nav-section-title">Servicios</div>
-                <a href="#" class="nav-item">
+                <a href="@Url.Action("Index", "Medical")" class="nav-item @IsActive("Medical")">
                     <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
                     Servicios Médicos
                 </a>

@@ -1,0 +1,508 @@
+﻿@model UTTN.Dashboard.ViewModels.Dashboard.MedicalViewModel
+@{
+    ViewData["Title"] = "Servicios Médicos — Salud Integral";
+    var cuatNames = new Dictionary<int, string> { { 0, "Todo el año" }, { 1, "Ene — Abr" }, { 2, "May — Ago" }, { 3, "Sep — Dic" } };
+}
+
+<style>
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .kpi-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow-sm);
+    }
+
+        .kpi-card .kpi-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .kpi-card .kpi-value {
+            font-size: 30px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .kpi-card .kpi-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .kpi-card .kpi-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+            .kpi-card .kpi-icon svg {
+                width: 22px;
+                height: 22px;
+                stroke-width: 1.8;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+                fill: none;
+            }
+
+    .section-title {
+        font-size: 15px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--text-primary);
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .section-title svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--accent);
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+    .chart-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .chart-box {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .chart-box-title {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--text-primary);
+        margin-bottom: 16px;
+    }
+
+    .chart-container {
+        position: relative;
+        width: 100%;
+        height: 280px;
+    }
+
+    .chart-container-donut {
+        position: relative;
+        width: 100%;
+        height: 260px;
+    }
+
+    .filter-bar {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        box-shadow: var(--shadow-sm);
+    }
+
+        .filter-bar label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .filter-bar select {
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            color: var(--text-primary);
+            background: white;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .filter-bar .btn-apply {
+            padding: 8px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .filter-bar .btn-clear {
+            padding: 8px 16px;
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+    .active-filter {
+        background: var(--accent-light);
+        border: 1px solid var(--accent);
+        border-radius: var(--radius-sm);
+        padding: 8px 16px;
+        font-size: 12px;
+        color: var(--accent);
+        font-weight: 600;
+        margin-bottom: 16px;
+        display: inline-block;
+    }
+
+    .filter-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .filter-row select {
+            padding: 7px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            color: var(--text-primary);
+            background: white;
+            cursor: pointer;
+            outline: none;
+        }
+
+    .record-count {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+    }
+</style>
+
+@if (ViewBag.Error != null)
+{
+    <div style="background: var(--danger-light); border: 1px solid rgba(239,68,68,0.2); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 20px; color: var(--danger); font-size: 13px;"><strong>Error:</strong> @ViewBag.Error</div>
+}
+
+<!-- Period Filter -->
+<form method="get" class="filter-bar">
+    <label>Año:</label>
+    <select name="year">@foreach (var y in Model.AvailableYears) { if (y == Model.SelectedYear) {
+    <option value="@y" selected="selected">@y</option>
+        } else
+    {
+
+        <option value="@y">@y</option>
+    } }
+</select>
+    <label>Cuatrimestre:</label>
+    <select name="cuatrimestre">@{
+        var cuatOptions = new Dictionary<int, string> { { 0, "Todo el año" }, { 1, "Ene — Abr" }, { 2, "May — Ago" }, { 3, "Sep — Dic" } };
+        }
+ @foreach (var opt in cuatOptions)
+{
+    if (opt.Key == Model.SelectedCuatrimestre)
+    {
+            <option value="@opt.Key" selected="selected">@opt.Value</option>
+        }
+        else
+        {
+
+            <option value="@opt.Key">@opt.Value</option>
+        }
+    }
+</select>
+    <button type="submit" class="btn-apply">Aplicar</button>
+    <a href="@Url.Action("Index", "Medical")" class="btn-clear">Limpiar</a>
+</form>
+@if (Model.SelectedCuatrimestre > 0)
+{
+    <div class="active-filter">Filtro activo: Año @Model.SelectedYear, @cuatNames[Model.SelectedCuatrimestre]</div>
+}
+
+<!-- KPI Cards -->
+<div class="kpi-grid">
+    <div class="kpi-card"><div><div class="kpi-label">Consultas Médicas</div><div class="kpi-value" style="color:var(--accent);">@Model.TotalVisitas</div></div><div class="kpi-icon" style="background:var(--accent-light);"><svg viewBox="0 0 24 24" stroke="var(--accent)"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Atención Psicológica</div><div class="kpi-value" style="color:var(--purple);">@Model.TotalPsicologicas</div></div><div class="kpi-icon" style="background:var(--purple-light);"><svg viewBox="0 0 24 24" stroke="var(--purple)"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Edad Promedio</div><div class="kpi-value" style="color:var(--info);">@Model.PromedioEdad</div><div class="kpi-sub">años</div></div><div class="kpi-icon" style="background:var(--info-light);"><svg viewBox="0 0 24 24" stroke="var(--info)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">IMC Promedio</div><div class="kpi-value" style="color:var(--warning);">@Model.PromedioIMC</div><div class="kpi-sub">Temp. promedio: @Model.PromedioTemperatura°C</div></div><div class="kpi-icon" style="background:var(--warning-light);"><svg viewBox="0 0 24 24" stroke="var(--warning)"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" /></svg></div></div>
+</div>
+
+<!-- Secondary KPIs -->
+<div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+    <div class="kpi-card"><div><div class="kpi-label">Con Alergias</div><div class="kpi-value" style="color:var(--danger);">@Model.ConAlergias</div></div><div class="kpi-icon" style="background:var(--danger-light);"><svg viewBox="0 0 24 24" stroke="var(--danger)"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Enfermedades Crónicas</div><div class="kpi-value" style="color:var(--pink);">@Model.ConEnfermedadesCronicas</div></div><div class="kpi-icon" style="background:var(--pink-light);"><svg viewBox="0 0 24 24" stroke="var(--pink)"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Terapia Previa</div><div class="kpi-value" style="color:var(--purple);">@Model.ConTerapiaPrevia</div><div class="kpi-sub">pacientes psicológicos</div></div><div class="kpi-icon" style="background:var(--purple-light);"><svg viewBox="0 0 24 24" stroke="var(--purple)"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Con Medicación</div><div class="kpi-value" style="color:var(--info);">@Model.ConMedicacion</div><div class="kpi-sub">medicación psiquiátrica</div></div><div class="kpi-icon" style="background:var(--info-light);"><svg viewBox="0 0 24 24" stroke="var(--info)"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M9 21V9" /></svg></div></div>
+</div>
+
+<!-- 2 Charts: Top Diagnosticos (bar) + Age distribution (donut) -->
+<div class="chart-row">
+    <div class="chart-box">
+        <div class="chart-box-title">Top 10 Motivos de Consulta Médica</div>
+        @if (Model.TopDiagnosticos.Any())
+        {
+            <div class="chart-container"><canvas id="chartDiag"></canvas></div>
+        }
+        else
+        {
+
+            <p class="no-data">Sin datos para este periodo</p>
+        }
+    </div>
+    <div class="chart-box">
+        <div class="chart-box-title">Distribución por Edad</div>
+        @if (Model.ByEdad.Any())
+        {
+            <div class="chart-container-donut"><canvas id="chartEdad"></canvas></div>
+        }
+        else
+        {
+
+            <p class="no-data">Sin datos</p>
+        }
+    </div>
+</div>
+
+<!-- Table 1: Top Diagnosticos -->
+@if (Model.TopDiagnosticos.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg> Top 15 — Diagnósticos Médicos</div>
+    <div class="chart-box" style="margin-bottom:24px;">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-export" onclick="exportTableToCSV('tblDiag','diagnosticos_medicos.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar</button></div>
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="tblDiag">
+                <thead><tr><th>#</th><th>Diagnóstico</th><th style="text-align:center;">Casos</th><th style="text-align:center;">%</th></tr></thead>
+                <tbody>@{
+                var rk = 1;
+            }
+ @foreach (var d in Model.TopDiagnosticos)
+{
+                <tr><td style="color:var(--text-muted);font-weight:600;">@rk</td><td style="font-weight:500;color:var(--text-primary);">@d.Status</td><td style="text-align:center;"><span class="badge badge-accent">@d.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@d.Percentage%</span></td></tr>
+                rk++;
+            }
+</tbody>
+        </table>
+    </div>
+</div>
+}
+
+<!-- Table 2: Motivos Psicológicos -->
+@if (Model.TopMotivosPsicologicos.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z" /></svg> Motivos de Consulta Psicológica</div>
+    <div class="chart-box" style="margin-bottom:24px;">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-export" onclick="exportTableToCSV('tblPsico','motivos_psicologicos.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar</button></div>
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="tblPsico">
+                <thead><tr><th>#</th><th>Motivo</th><th style="text-align:center;">Casos</th><th style="text-align:center;">%</th></tr></thead>
+                <tbody>
+                    @{
+                        var rk2 = 1;
+                    }
+     @foreach (var m in Model.TopMotivosPsicologicos)
+    {
+                        var mc = m.Status.Contains("suicida") || m.Status.Contains("Violencia") ? "badge-danger" : m.Status.Contains("Ansiedad") || m.Status.Contains("Depresión") ? "badge-warning" : "badge-accent";
+                        <tr><td style="color:var(--text-muted);font-weight:600;">@rk2</td><td style="font-weight:500;color:var(--text-primary);">@m.Status</td><td style="text-align:center;"><span class="badge @mc">@m.Count</span></td><td style="text-align:center;"><span class="badge badge-neutral">@m.Percentage%</span></td></tr>
+                        rk2++;
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<!-- Table 3: Distribución por Edad + Signos Vitales -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    @if (Model.ByEdad.Any())
+    {
+        <div class="chart-box">
+            <div class="chart-box-title">Distribución por Edad</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Rango</th><th style="text-align:center;">Total</th></tr></thead>
+                    <tbody>@foreach (var e in Model.ByEdad) {
+                    <tr><td style="font-weight:500;color:var(--text-primary);">@e.Range</td><td style="text-align:center;"><span class="badge badge-accent">@e.Count</span></td></tr>
+                }
+</tbody>
+            </table>
+        </div>
+    </div>
+        }
+    <div class="chart-box">
+        <div class="chart-box-title">Resumen de Signos Vitales</div>
+        <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead><tr><th>Indicador</th><th style="text-align:center;">Valor Promedio</th></tr></thead>
+                <tbody>
+                    <tr><td style="font-weight:500;color:var(--text-primary);">Temperatura</td><td style="text-align:center;"><span class="badge @(Model.PromedioTemperatura > 37.5m ? "badge-danger" : "badge-success")">@Model.PromedioTemperatura °C</span></td></tr>
+                    <tr><td style="font-weight:500;color:var(--text-primary);">IMC</td><td style="text-align:center;"><span class="badge @(Model.PromedioIMC > 25 ? "badge-warning" : "badge-success")">@Model.PromedioIMC</span></td></tr>
+                    <tr><td style="font-weight:500;color:var(--text-primary);">Edad Promedio</td><td style="text-align:center;"><span class="badge badge-info">@Model.PromedioEdad años</span></td></tr>
+                    <tr><td style="font-weight:500;color:var(--text-primary);">Pacientes con Alergias</td><td style="text-align:center;"><span class="badge badge-danger">@Model.ConAlergias</span></td></tr>
+                    <tr><td style="font-weight:500;color:var(--text-primary);">Enfermedades Crónicas</td><td style="text-align:center;"><span class="badge badge-warning">@Model.ConEnfermedadesCronicas</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Table 4: Bitácora de Atención Médica -->
+@if (Model.RecentVisitas.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg> Bitácora de Atención Médica</div>
+    <div class="chart-box" style="margin-bottom:24px;">
+        <div class="filter-row">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <label style="font-size:13px;font-weight:600;color:var(--text-secondary);">Diagnóstico:</label>
+                <select onchange="filterTableByColumn(this.value,'tblVisitas',4)">
+                    <option value="">Todos</option>
+                    @foreach (var d in Model.TopDiagnosticos.Take(10))
+                    {
+                        <option value="@d.Status">@d.Status</option>
+                    }
+                </select>
+            </div>
+            <button class="btn-export" onclick="exportTableToCSV('tblVisitas','bitacora_medica.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Descargar Bitácora</button>
+        </div>
+        <div class="record-count" id="tblVisitasCount">Mostrando 1 a @Model.RecentVisitas.Count de @Model.RecentVisitas.Count registros</div>
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="tblVisitas">
+                <thead><tr><th>Matrícula</th><th style="text-align:right;">Fecha</th><th style="text-align:center;">Edad</th><th style="text-align:center;">Temp.</th><th>Diagnóstico</th><th style="text-align:center;">P/A</th><th style="text-align:center;">Sat.</th><th style="text-align:center;">Alergias</th></tr></thead>
+                <tbody>
+                    @foreach (var v in Model.RecentVisitas)
+                    {
+                        <tr>
+                            <td style="font-weight:600;color:var(--accent);">@v.Matricula</td>
+                            <td style="text-align:right;font-size:12px;color:var(--text-muted);">@v.FechaVisita.ToString("dd/MM/yyyy")</td>
+                            <td style="text-align:center;">@v.Edad</td>
+                            <td style="text-align:center;"><span class="badge @(v.Temperatura != "—" && decimal.TryParse(v.Temperatura, out var temp) && temp > 37.5m ? "badge-danger" : "badge-success")">@v.Temperatura°</span></td>
+                            <td style="font-weight:500;color:var(--text-primary);">@v.Diagnostico</td>
+                            <td style="text-align:center;font-size:12px;">@v.PresionArterial</td>
+                            <td style="text-align:center;font-size:12px;">@v.Saturacion</td>
+                            <td style="text-align:center;">@if (v.TieneAlergias) {
+                            <span class="badge badge-danger" title="@v.Alergias">Sí</span>
+                        } else
+                        {
+
+                            <span class="badge badge-neutral">No</span>
+                        }
+    </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+}
+
+<!-- Table 5: Bitácora Psicológica -->
+@if (Model.RecentPsicologicas.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z" /></svg> Bitácora de Atención Psicológica</div>
+    <div class="chart-box">
+        <div class="filter-row">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <label style="font-size:13px;font-weight:600;color:var(--text-secondary);">Motivo:</label>
+                <select onchange="filterTableByColumn(this.value,'tblPsicoVisitas',4)">
+                    <option value="">Todos</option>
+                    @foreach (var m in Model.TopMotivosPsicologicos.Take(10))
+                    {
+                        <option value="@m.Status">@m.Status</option>
+                    }
+                </select>
+            </div>
+            <button class="btn-export" onclick="exportTableToCSV('tblPsicoVisitas','bitacora_psicologica.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Descargar Bitácora</button>
+        </div>
+        <div class="record-count" id="tblPsicoVisitasCount">Mostrando 1 a @Model.RecentPsicologicas.Count de @Model.RecentPsicologicas.Count registros</div>
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="tblPsicoVisitas">
+                <thead><tr><th>Matrícula</th><th style="text-align:right;">Fecha</th><th style="text-align:center;">Edad</th><th style="text-align:center;">Terapia Previa</th><th>Motivo de Consulta</th><th>Medicación</th></tr></thead>
+                <tbody>
+                    @foreach (var p in Model.RecentPsicologicas)
+                    {
+                        <tr>
+                            <td style="font-weight:600;color:var(--accent);">@p.Matricula</td>
+                            <td style="text-align:right;font-size:12px;color:var(--text-muted);">@p.FechaVisita.ToString("dd/MM/yyyy")</td>
+                            <td style="text-align:center;">@p.Edad</td>
+                            <td style="text-align:center;">@if (p.TerapiaPrevia) {
+                            <span class="badge badge-warning">Sí</span>
+                        } else
+                        {
+
+                            <span class="badge badge-neutral">No</span>
+                        }
+    </td>
+                        <td style="font-weight:500;color:var(--text-primary);">@p.MotivoConsulta</td>
+                        <td style="font-size:12px;color:var(--text-muted);">@(string.IsNullOrEmpty(p.Medicacion) ? "—" : p.Medicacion)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script>
+        Chart.register(ChartDataLabels);
+        Chart.defaults.color = '#8a9e95'; Chart.defaults.borderColor = 'rgba(0,0,0,0.06)'; Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif"; Chart.defaults.font.size = 12;
+        var dlBarH = { anchor:'end', align:'right', color:'#1a2b25', font:{weight:'700',size:13}, offset:6 };
+        var dlDonut = { color:'#fff', font:{weight:'700',size:14}, formatter:function(v,ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b},0);var p=t>0?Math.round(v/t*100):0;return p>5?p+'%':'';} };
+        var palette = ['#0d9e7a','#e84393','#f0b429','#22c3a6','#8b5cf6','#3b82f6','#ef4444','#06b6d4','#84cc16','#f97316'];
+
+        @if (Model.TopDiagnosticos.Any())
+        {
+            <text>
+            new Chart(document.getElementById('chartDiag'),{type:'bar',data:{labels:[@Html.Raw(string.Join(",", Model.TopDiagnosticos.Take(10).Select(d => $"'{d.Status}'")))],datasets:[{data:[@string.Join(",", Model.TopDiagnosticos.Take(10).Select(d => d.Count))],backgroundColor:'#e84393',borderRadius:4,borderSkipped:false,maxBarThickness:36}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:dlBarH},scales:{x:{display:false,grid:{display:false}},y:{grid:{display:false}}},layout:{padding:{right:40}}}});
+            </text>
+        }
+
+        @if (Model.ByEdad.Any())
+        {
+            <text>
+            new Chart(document.getElementById('chartEdad'),{type:'doughnut',data:{labels:[@Html.Raw(string.Join(",", Model.ByEdad.Select(e => $"'{e.Range}'")))],datasets:[{data:[@string.Join(",", Model.ByEdad.Select(e => e.Count))],backgroundColor:palette,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true,pointStyle:'rectRounded',font:{size:11}}},datalabels:dlDonut}}});
+            </text>
+        }
+
+        function filterTableByColumn(value,tableId,colIndex){var table=document.getElementById(tableId);if(!table)return;if(!window._filters)window._filters={};if(!window._filters[tableId])window._filters[tableId]={};if(value){window._filters[tableId][colIndex]=value;}else{delete window._filters[tableId][colIndex];}var rows=table.querySelectorAll('tbody tr');var visible=0;rows.forEach(function(row){var show=true;for(var ci in window._filters[tableId]){var fv=window._filters[tableId][ci];var cell=row.cells[parseInt(ci)];if(cell&&cell.textContent.trim().indexOf(fv)===-1){show=false;break;}}row.style.display=show?'':'none';if(show)visible++;});var el=document.getElementById(tableId+'Count');if(el)el.textContent='Mostrando 1 a '+visible+' de '+rows.length+' registros';}
+        function exportTableToCSV(tid,fn){var t=document.getElementById(tid);var r=t.querySelectorAll('tr');var c=[];r.forEach(function(row){if(row.style.display==='none')return;var cols=row.querySelectorAll('th,td');var d=[];cols.forEach(function(col){d.push('"'+col.textContent.trim().replace(/\n/g,' ').replace(/"/g,'""')+'"');});c.push(d.join(','));});var b=new Blob(['\uFEFF'+c.join('\n')],{type:'text/csv;charset=utf-8;'});var l=document.createElement('a');l.href=URL.createObjectURL(b);l.download=fn;l.click();}
+    </script>
+}
