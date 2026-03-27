@@ -460,90 +460,7 @@ namespace UTTN.Dashboard.Services.Implementations
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // 4. ASPIRANTES
-        // ═══════════════════════════════════════════════════════════════
-        public async Task<AspirantesViewModel> GetAspirantesDataAsync(int? year = null, int? cuatrimestre = null)
-        {
-            using var connection = _context.CreateConnection();
-            var vm = new AspirantesViewModel();
-
-            if (!await TableExists(connection, "Aspirantes"))
-            {
-                vm.AvailableYears = new List<int> { DateTime.Now.Year };
-                vm.SelectedYear = year ?? DateTime.Now.Year;
-                vm.SelectedCuatrimestre = cuatrimestre ?? 0;
-                return vm;
-            }
-
-            var years = await connection.QueryAsync<int>("SELECT DISTINCT YEAR(FechaRegistro) FROM Aspirantes ORDER BY 1 DESC");
-            vm.AvailableYears = years.ToList();
-            if (!vm.AvailableYears.Any()) vm.AvailableYears.Add(DateTime.Now.Year);
-            vm.SelectedYear = year ?? DateTime.Now.Year;
-            vm.SelectedCuatrimestre = cuatrimestre ?? 0;
-
-            int startMonth = 1, endMonth = 12;
-            if (vm.SelectedCuatrimestre > 0)
-            {
-                startMonth = vm.SelectedCuatrimestre switch { 1 => 1, 2 => 5, 3 => 9, _ => 1 };
-                endMonth = vm.SelectedCuatrimestre switch { 1 => 4, 2 => 8, 3 => 12, _ => 12 };
-            }
-            var fp = new { Year = vm.SelectedYear, StartMonth = startMonth, EndMonth = endMonth };
-            string df = "YEAR(a.FechaRegistro) = @Year AND MONTH(a.FechaRegistro) BETWEEN @StartMonth AND @EndMonth";
-
-            vm.TotalAspirantes = await connection.ExecuteScalarAsync<int>($"SELECT COUNT(*) FROM Aspirantes a WHERE {df}", fp);
-            vm.Aceptados = await connection.ExecuteScalarAsync<int>($"SELECT COUNT(*) FROM Aspirantes a WHERE EstadoRegistro = 'Aceptado' AND {df}", fp);
-            vm.Pendientes = await connection.ExecuteScalarAsync<int>($"SELECT COUNT(*) FROM Aspirantes a WHERE EstadoRegistro = 'Pendiente' AND {df}", fp);
-            vm.DocIncompleta = await connection.ExecuteScalarAsync<int>($"SELECT COUNT(*) FROM Aspirantes a WHERE EstadoRegistro = 'Documentación Incompleta' AND {df}", fp);
-            vm.FichasPagadas = await connection.ExecuteScalarAsync<int>($"SELECT COUNT(*) FROM Aspirantes a WHERE EstadoRegistro = 'Ficha Pagada' AND {df}", fp);
-            vm.ExamenPresentado = await connection.ExecuteScalarAsync<int>($"SELECT COUNT(*) FROM Aspirantes a WHERE EstadoRegistro = 'Examen Presentado' AND {df}", fp);
-            vm.Rechazados = await connection.ExecuteScalarAsync<int>($"SELECT COUNT(*) FROM Aspirantes a WHERE EstadoRegistro = 'Rechazado' AND {df}", fp);
-            vm.PromedioGeneral = await connection.ExecuteScalarAsync<decimal?>($"SELECT AVG(e.Promedio) FROM AspiranteEscolar e INNER JOIN Aspirantes a ON e.Folio = a.Folio WHERE {df}", fp) ?? 0;
-            vm.PromedioGeneral = Math.Round(vm.PromedioGeneral, 2);
-
-            var byStatus = await connection.QueryAsync<dynamic>($"SELECT EstadoRegistro AS Status, COUNT(*) AS Count FROM Aspirantes a WHERE {df} GROUP BY EstadoRegistro ORDER BY Count DESC", fp);
-            var totalSt = byStatus.Sum(x => (int)x.Count);
-            vm.ByStatus = byStatus.Select(x => new StatusStatItem { Status = (string)x.Status, Count = (int)x.Count, Percentage = totalSt > 0 ? Math.Round((decimal)(int)x.Count / totalSt * 100, 1) : 0 }).ToList();
-
-            var byCareer = await connection.QueryAsync<dynamic>($"SELECT CarreraSolicitada AS CareerName, COUNT(*) AS Count FROM Aspirantes a WHERE {df} GROUP BY CarreraSolicitada ORDER BY Count DESC", fp);
-            var totalCr = byCareer.Sum(x => (int)x.Count);
-            vm.ByCareer = byCareer.Select(x => new CareerStatItem { CareerName = (string)x.CareerName, Count = (int)x.Count, Percentage = totalCr > 0 ? Math.Round((decimal)(int)x.Count / totalCr * 100, 1) : 0 }).ToList();
-
-            var gender = await connection.QueryAsync<dynamic>($"SELECT d.Sexo AS Gender, COUNT(*) AS Count FROM AspiranteDatosGenerales d INNER JOIN Aspirantes a ON d.Folio = a.Folio WHERE {df} GROUP BY d.Sexo", fp);
-            foreach (var g in gender) { string gen = ((string)g.Gender).ToLower(); int cnt = (int)g.Count; if (gen.Contains("masculino") || gen == "m") vm.MaleCount += cnt; else if (gen.Contains("femenino") || gen == "f") vm.FemaleCount += cnt; }
-
-            var byMun = await connection.QueryAsync<dynamic>($"SELECT TOP 10 dom.Municipio AS Name, COUNT(*) AS Count FROM AspiranteDomicilio dom INNER JOIN Aspirantes a ON dom.Folio = a.Folio WHERE {df} GROUP BY dom.Municipio ORDER BY Count DESC", fp);
-            var totalM = byMun.Sum(x => (int)x.Count);
-            vm.ByMunicipio = byMun.Select(x => new GeoStatItem { Name = (string)x.Name, Count = (int)x.Count, Percentage = totalM > 0 ? Math.Round((decimal)(int)x.Count / totalM * 100, 1) : 0 }).ToList();
-
-            vm.TopEscuelas = (await connection.QueryAsync<EscuelaStatItem>($"SELECT TOP 10 e.EscuelaProcedencia AS EscuelaNombre, ISNULL(e.EstadoEscuela,'—') AS Estado, COUNT(*) AS Count FROM AspiranteEscolar e INNER JOIN Aspirantes a ON e.Folio = a.Folio WHERE {df} GROUP BY e.EscuelaProcedencia, e.EstadoEscuela ORDER BY Count DESC", fp)).ToList();
-
-            var byTipo = await connection.QueryAsync<dynamic>($"SELECT e.TipoPreparatoria AS Status, COUNT(*) AS Count FROM AspiranteEscolar e INNER JOIN Aspirantes a ON e.Folio = a.Folio WHERE {df} GROUP BY e.TipoPreparatoria ORDER BY Count DESC", fp);
-            var totalT = byTipo.Sum(x => (int)x.Count);
-            vm.ByTipoPrepa = byTipo.Select(x => new StatusStatItem { Status = (string)x.Status, Count = (int)x.Count, Percentage = totalT > 0 ? Math.Round((decimal)(int)x.Count / totalT * 100, 1) : 0 }).ToList();
-
-            var byMedio = await connection.QueryAsync<dynamic>($"SELECT ISNULL(o.ComoSeEntero,'No especificado') AS Status, COUNT(*) AS Count FROM AspiranteOtros o INNER JOIN Aspirantes a ON o.Folio = a.Folio WHERE {df} GROUP BY o.ComoSeEntero ORDER BY Count DESC", fp);
-            var totalMd = byMedio.Sum(x => (int)x.Count);
-            vm.ByMedioDifusion = byMedio.Select(x => new StatusStatItem { Status = (string)x.Status, Count = (int)x.Count, Percentage = totalMd > 0 ? Math.Round((decimal)(int)x.Count / totalMd * 100, 1) : 0 }).ToList();
-
-            vm.TotalOtros = await connection.ExecuteScalarAsync<int>($"SELECT COUNT(*) FROM AspiranteOtros o INNER JOIN Aspirantes a ON o.Folio = a.Folio WHERE {df}", fp);
-            vm.Trabajan = await connection.ExecuteScalarAsync<int>($"SELECT COUNT(*) FROM AspiranteOtros o INNER JOIN Aspirantes a ON o.Folio = a.Folio WHERE o.Trabaja = 1 AND {df}", fp);
-            vm.ConBeca = await connection.ExecuteScalarAsync<int>($"SELECT COUNT(*) FROM AspiranteOtros o INNER JOIN Aspirantes a ON o.Folio = a.Folio WHERE o.ContabaConBeca = 1 AND {df}", fp);
-            vm.OrigenIndigena = await connection.ExecuteScalarAsync<int>($"SELECT COUNT(*) FROM AspiranteOtros o INNER JOIN Aspirantes a ON o.Folio = a.Folio WHERE o.OrigenIndigena = 1 AND {df}", fp);
-            vm.ConDiscapacidad = await connection.ExecuteScalarAsync<int>($"SELECT COUNT(*) FROM AspiranteOtros o INNER JOIN Aspirantes a ON o.Folio = a.Folio WHERE o.PadeceDiscapacidad = 1 AND {df}", fp);
-            vm.ConEnfermedad = await connection.ExecuteScalarAsync<int>($"SELECT COUNT(*) FROM AspiranteOtros o INNER JOIN Aspirantes a ON o.Folio = a.Folio WHERE o.PadeceEnfermedad = 1 AND {df}", fp);
-
-            vm.RecentAspirantes = (await connection.QueryAsync<AspiranteDetailItem>($@"
-                SELECT TOP 50 a.Folio, d.Nombre + ' ' + d.ApellidoPaterno AS Nombre, a.CarreraSolicitada AS Carrera,
-                    e.Promedio, e.EscuelaProcedencia AS Preparatoria, dom.Estado, a.EstadoRegistro AS Estatus, a.FechaRegistro AS Fecha
-                FROM Aspirantes a LEFT JOIN AspiranteDatosGenerales d ON a.Folio = d.Folio
-                LEFT JOIN AspiranteEscolar e ON a.Folio = e.Folio LEFT JOIN AspiranteDomicilio dom ON a.Folio = dom.Folio
-                WHERE {df} ORDER BY a.FechaRegistro DESC", fp)).ToList();
-
-            return vm;
-        }
-
-        // ═══════════════════════════════════════════════════════════════
-        // 5. SERVICIOS MEDICOS
+        // 4. SERVICIOS MEDICOS
         // ═══════════════════════════════════════════════════════════════
         public async Task<MedicalViewModel> GetMedicalDataAsync(int? year = null, int? cuatrimestre = null)
         {
@@ -633,7 +550,7 @@ namespace UTTN.Dashboard.Services.Implementations
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // 6. VINCULACION
+        // 5. VINCULACION
         // ═══════════════════════════════════════════════════════════════
         public async Task<VinculacionViewModel> GetVinculacionDataAsync(int? year = null, int? cuatrimestre = null)
         {
@@ -760,7 +677,7 @@ namespace UTTN.Dashboard.Services.Implementations
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // 7. CALIDAD ACADEMICA (GRADES)
+        // 6. CALIDAD ACADEMICA (GRADES)
         // ═══════════════════════════════════════════════════════════════
         public async Task<AcademicQualityViewModel> GetAcademicQualityDataAsync(int? year = null, int? cuatrimestre = null)
         {
