@@ -22,8 +22,10 @@ bld/
 **/[Pp]ackages/
 project.lock.json
 
-## User secrets
+## User secrets & config with credentials
+appsettings.json
 appsettings.Development.json
+appsettings.Production.json
 
 ## Publish output
 publish/
@@ -31,3 +33,14 @@ publish/
 ## OS files
 .DS_Store
 Thumbs.db
+desktop.ini
+
+## IDE
+*.swp
+*.swo
+*~
+.idea/
+*.code-workspace
+
+## SQL scripts with credentials
+*.bak

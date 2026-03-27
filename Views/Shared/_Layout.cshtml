@@ -1,17 +1,17 @@
-﻿@{
-    var fullName = User.Identity?.IsAuthenticated == true
-        ? (User.FindFirst("FullName")?.Value ?? "Usuario")
-        : "Modo Desarrollo";
-    var roleName = User.Identity?.IsAuthenticated == true
-        ? (User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "—")
-        : "Admin (dev)";
-    var initials = User.Identity?.IsAuthenticated == true
-        ? string.Join("", fullName.Split(' ').Where(w => w.Length > 0).Take(2).Select(w => w[0])).ToUpper()
-        : "DV";
+﻿﻿@{
+var fullName = User.Identity?.IsAuthenticated == true
+    ? (User.FindFirst("FullName")?.Value ?? "Usuario")
+    : "Modo Desarrollo";
+var roleName = User.Identity?.IsAuthenticated == true
+    ? (User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "—")
+    : "Admin (dev)";
+var initials = User.Identity?.IsAuthenticated == true
+    ? string.Join("", fullName.Split(' ').Where(w => w.Length > 0).Take(2).Select(w => w[0])).ToUpper()
+    : "DV";
 
-    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
-    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
-    string IsActive(string controller) => currentController.Equals(controller, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+string IsActive(string controller) => currentController.Equals(controller, StringComparison.OrdinalIgnoreCase) ? "active" : "";
 }
 
 <!DOCTYPE html>
