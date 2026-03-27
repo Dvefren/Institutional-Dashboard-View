@@ -1,0 +1,510 @@
+﻿@model UTTN.Dashboard.ViewModels.Dashboard.AcademicQualityViewModel
+@{
+    ViewData["Title"] = "Calidad Académica — Rendimiento Estudiantil";
+    var cuatNames = new Dictionary<int, string> { { 0, "Todo el año" }, { 1, "Ene — Abr" }, { 2, "May — Ago" }, { 3, "Sep — Dic" } };
+}
+
+<style>
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .kpi-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow-sm);
+    }
+
+        .kpi-card .kpi-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .kpi-card .kpi-value {
+            font-size: 30px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .kpi-card .kpi-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .kpi-card .kpi-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+            .kpi-card .kpi-icon svg {
+                width: 22px;
+                height: 22px;
+                stroke-width: 1.8;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+                fill: none;
+            }
+
+    .section-title {
+        font-size: 15px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--text-primary);
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .section-title svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--accent);
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+    .chart-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .chart-box {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .chart-box-title {
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--text-primary);
+        margin-bottom: 16px;
+    }
+
+    .chart-container {
+        position: relative;
+        width: 100%;
+        height: 280px;
+    }
+
+    .chart-container-donut {
+        position: relative;
+        width: 100%;
+        height: 260px;
+    }
+
+    .filter-bar {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        box-shadow: var(--shadow-sm);
+    }
+
+        .filter-bar label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .filter-bar select {
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            color: var(--text-primary);
+            background: white;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .filter-bar .btn-apply {
+            padding: 8px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .filter-bar .btn-clear {
+            padding: 8px 16px;
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+    .active-filter {
+        background: var(--accent-light);
+        border: 1px solid var(--accent);
+        border-radius: var(--radius-sm);
+        padding: 8px 16px;
+        font-size: 12px;
+        color: var(--accent);
+        font-weight: 600;
+        margin-bottom: 16px;
+        display: inline-block;
+    }
+
+    .filter-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+        .filter-row select {
+            padding: 7px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 13px;
+            color: var(--text-primary);
+            background: white;
+            cursor: pointer;
+            outline: none;
+        }
+
+    .record-count {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+    }
+</style>
+
+@if (ViewBag.Error != null)
+{
+    <div style="background:var(--danger-light);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:20px;color:var(--danger);font-size:13px;"><strong>Error:</strong> @ViewBag.Error</div>
+}
+
+<form method="get" class="filter-bar">
+    <label>Año:</label>
+    <select name="year">@foreach (var y in Model.AvailableYears) { if (y == Model.SelectedYear) {
+    <option value="@y" selected="selected">@y</option>
+        } else
+    {
+
+        <option value="@y">@y</option>
+    } }
+</select>
+    <label>Cuatrimestre:</label>
+    <select name="cuatrimestre">@{
+        var cuatOptions = new Dictionary<int, string> { { 0, "Todo el año" }, { 1, "Ene — Abr" }, { 2, "May — Ago" }, { 3, "Sep — Dic" } };
+        }
+ @foreach (var opt in cuatOptions)
+{
+    if (opt.Key == Model.SelectedCuatrimestre)
+    {
+            <option value="@opt.Key" selected="selected">@opt.Value</option>
+        }
+        else
+        {
+
+            <option value="@opt.Key">@opt.Value</option>
+        }
+    }
+</select>
+    <button type="submit" class="btn-apply">Aplicar</button>
+    <a href="@Url.Action("Index", "AcademicQuality")" class="btn-clear">Limpiar</a>
+</form>
+@if (Model.SelectedCuatrimestre > 0)
+{
+    <div class="active-filter">Filtro activo: Año @Model.SelectedYear, @cuatNames[Model.SelectedCuatrimestre]</div>
+}
+
+<!-- KPIs -->
+<div class="kpi-grid">
+    <div class="kpi-card"><div><div class="kpi-label">Calificaciones Finales</div><div class="kpi-value" style="color:var(--accent);">@Model.TotalFinalGrades</div><div class="kpi-sub">@Model.TotalGradeRecords registros parciales</div></div><div class="kpi-icon" style="background:var(--accent-light);"><svg viewBox="0 0 24 24" stroke="var(--accent)"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Tasa de Aprobación</div><div class="kpi-value" style="color:var(--success);">@Model.TasaAprobacion%</div><div style="width:100%;height:8px;background:var(--bg-input);border-radius:4px;overflow:hidden;margin-top:6px;"><div style="height:100%;width:@Model.TasaAprobacion%;background:var(--success);border-radius:4px;"></div></div></div><div class="kpi-icon" style="background:var(--success-light);"><svg viewBox="0 0 24 24" stroke="var(--success)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Promedio General</div><div class="kpi-value" style="color:var(--purple);">@Model.PromedioGeneral</div></div><div class="kpi-icon" style="background:var(--purple-light);"><svg viewBox="0 0 24 24" stroke="var(--purple)"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg></div></div>
+    <div class="kpi-card"><div><div class="kpi-label">Oportunidades</div><div class="kpi-value" style="color:var(--warning);">@Model.TotalOpportunities</div><div class="kpi-sub">@Model.Reprobados reprobados · @Model.TotalSubjects materias</div></div><div class="kpi-icon" style="background:var(--warning-light);"><svg viewBox="0 0 24 24" stroke="var(--warning)"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg></div></div>
+</div>
+
+<!-- 2 Charts: Grade distribution (bar) + Pass/Fail (donut) -->
+<div class="chart-row">
+    <div class="chart-box">
+        <div class="chart-box-title">Distribución de Calificaciones Finales</div>
+        @if (Model.GradeDistribution.Any())
+        {
+            <div class="chart-container"><canvas id="chartDist"></canvas></div>
+        }
+        else
+        {
+
+            <p class="no-data">Sin datos</p>
+        }
+    </div>
+    <div class="chart-box">
+        <div class="chart-box-title">Aprobación vs Reprobación</div>
+        @if (Model.ByPassStatus.Any())
+        {
+            <div class="chart-container-donut"><canvas id="chartPass"></canvas></div>
+        }
+        else
+        {
+
+            <p class="no-data">Sin datos</p>
+        }
+    </div>
+</div>
+
+<!-- Table 1: Rendimiento por Materia -->
+@if (Model.GradesBySubject.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg> Rendimiento por Materia</div>
+    <div class="chart-box" style="margin-bottom:24px;">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-export" onclick="exportTableToCSV('tblSubjects','rendimiento_materias.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar</button></div>
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="tblSubjects">
+                <thead><tr><th>Materia</th><th>Carrera</th><th style="text-align:center;">Promedio</th><th style="text-align:center;">Alumnos</th><th style="text-align:center;">Aprobados</th><th style="text-align:center;">Reprobados</th><th style="text-align:center;">% Aprob.</th></tr></thead>
+                <tbody>
+                    @foreach (var s in Model.GradesBySubject)
+                    {
+                        var pc = s.PassRate >= 80 ? "badge-success" : s.PassRate >= 60 ? "badge-warning" : "badge-danger";
+                        var gc = s.Average >= 8 ? "badge-success" : s.Average >= 7 ? "badge-accent" : "badge-danger";
+                        <tr>
+                            <td style="font-weight:500;color:var(--text-primary);">@s.SubjectName</td>
+                            <td style="font-size:12px;">@s.CareerName</td>
+                            <td style="text-align:center;"><span class="badge @gc">@s.Average.ToString("0.0")</span></td>
+                            <td style="text-align:center;"><span class="badge badge-neutral">@s.TotalStudents</span></td>
+                            <td style="text-align:center;"><span class="badge badge-success">@s.Passed</span></td>
+                            <td style="text-align:center;"><span class="badge @(s.Failed > 0 ? "badge-danger" : "badge-neutral")">@s.Failed</span></td>
+                            <td style="text-align:center;"><span class="badge @pc">@s.PassRate.ToString("0.0")%</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<!-- Table 2: Rendimiento por Docente -->
+@if (Model.GradesByTeacher.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> Rendimiento por Docente</div>
+    <div class="chart-box" style="margin-bottom:24px;">
+        <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead><tr><th>Docente</th><th style="text-align:center;">Materias</th><th style="text-align:center;">Alumnos</th><th style="text-align:center;">Promedio</th><th style="text-align:center;">% Aprob.</th></tr></thead>
+                <tbody>
+                    @foreach (var t in Model.GradesByTeacher)
+                    {
+                        var pc = t.PassRate >= 80 ? "badge-success" : t.PassRate >= 60 ? "badge-warning" : "badge-danger";
+                        <tr><td style="font-weight:500;color:var(--text-primary);">@t.TeacherName</td><td style="text-align:center;"><span class="badge badge-info">@t.TotalSubjects</span></td><td style="text-align:center;"><span class="badge badge-neutral">@t.TotalStudents</span></td><td style="text-align:center;"><span class="badge badge-accent">@t.AverageGrade.ToString("0.0")</span></td><td style="text-align:center;"><span class="badge @pc">@t.PassRate.ToString("0.0")%</span></td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<!-- Table 3: Materias por Carrera + Distribución side by side -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    @if (Model.SubjectsByCareer.Any())
+    {
+        <div class="chart-box">
+            <div class="chart-box-title">Materias por Carrera</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Carrera</th><th style="text-align:center;">Materias</th><th style="text-align:center;">Hrs/Sem</th></tr></thead>
+                    <tbody>@foreach (var sc in Model.SubjectsByCareer) {
+                    <tr><td style="font-weight:500;color:var(--text-primary);">@sc.CareerName</td><td style="text-align:center;"><span class="badge badge-accent">@sc.SubjectCount</span></td><td style="text-align:center;"><span class="badge badge-neutral">@sc.TotalHours</span></td></tr>
+                }
+</tbody>
+            </table>
+        </div>
+    </div>
+        }
+    @if (Model.GradeDistribution.Any())
+    {
+        <div class="chart-box">
+            <div class="chart-box-title">Distribución de Promedios</div>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead><tr><th>Rango</th><th style="text-align:center;">Total</th></tr></thead>
+                    <tbody>
+                        @foreach (var g in Model.GradeDistribution)
+                        {
+                            var gc = g.Range.StartsWith("9") ? "badge-success" : g.Range.StartsWith("8") ? "badge-accent" : g.Range.StartsWith("7") ? "badge-warning" : "badge-danger";
+                            <tr><td style="font-weight:500;color:var(--text-primary);">@g.Range</td><td style="text-align:center;"><span class="badge @gc">@g.Count</span></td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Table 4: Periodos -->
+@if (Model.Periods.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg> Periodos Académicos</div>
+    <div class="chart-box" style="margin-bottom:24px;">
+        <div style="overflow-x:auto;">
+            <table class="data-table">
+                <thead><tr><th>Periodo</th><th style="text-align:center;">Inicio</th><th style="text-align:center;">Fin</th><th style="text-align:center;">Asignaciones</th><th style="text-align:center;">Activo</th></tr></thead>
+                <tbody>@foreach (var p in Model.Periods) {
+                <tr><td style="font-weight:500;color:var(--text-primary);">@p.Name</td><td style="text-align:center;font-size:12px;">@p.StartDate.ToString("dd/MM/yyyy")</td><td style="text-align:center;font-size:12px;">@p.EndDate.ToString("dd/MM/yyyy")</td><td style="text-align:center;"><span class="badge badge-accent">@p.Assignments</span></td><td style="text-align:center;">@if (p.IsActive) {
+                <span class="badge badge-success">Activo</span>
+            }
+            else
+            {
+
+                <span class="badge badge-neutral">Cerrado</span>
+            }
+</td></tr>
+                        }
+</tbody>
+        </table>
+    </div>
+</div>
+}
+
+<!-- Table 5: Catálogo de Materias -->
+@if (Model.SubjectCatalog.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg> Catálogo de Materias</div>
+    <div class="chart-box" style="margin-bottom:24px;">
+        <div class="filter-row">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <label style="font-size:13px;font-weight:600;color:var(--text-secondary);">Carrera:</label>
+                <select onchange="filterTableByColumn(this.value,'tblCatalog',2)"><option value="">Todas</option>@foreach (var c in Model.SubjectsByCareer) {
+                <option value="@c.CareerName">@c.CareerName</option>
+            }
+</select>
+        </div>
+        <button class="btn-export" onclick="exportTableToCSV('tblCatalog','catalogo_materias.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar</button>
+    </div>
+    <div class="record-count" id="tblCatalogCount">Mostrando 1 a @Model.SubjectCatalog.Count de @Model.SubjectCatalog.Count registros</div>
+    <div style="overflow-x:auto;">
+        <table class="data-table" id="tblCatalog">
+            <thead><tr><th>Código</th><th>Materia</th><th>Carrera</th><th style="text-align:center;">Cuatrimestre</th><th style="text-align:center;">Hrs/Sem</th></tr></thead>
+            <tbody>@foreach (var s in Model.SubjectCatalog) {
+            <tr><td style="font-weight:600;color:var(--accent);">@s.Code</td><td style="font-weight:500;color:var(--text-primary);">@s.Name</td><td style="font-size:12px;">@s.CareerName</td><td style="text-align:center;"><span class="badge badge-info">@s.Semester</span></td><td style="text-align:center;"><span class="badge badge-neutral">@s.WeeklyHours</span></td></tr>
+                        }
+</tbody>
+        </table>
+    </div>
+</div>
+}
+
+<!-- Table 6: Calificaciones Finales Recientes -->
+@if (Model.RecentFinalGrades.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg> Calificaciones Finales Recientes</div>
+    <div class="chart-box" style="margin-bottom:24px;">
+        <div class="filter-row">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <label style="font-size:13px;font-weight:600;color:var(--text-secondary);">Estatus:</label>
+                <select onchange="filterTableByColumn(this.value,'tblGrades',5)"><option value="">Todos</option><option value="Aprobado">Aprobado</option><option value="Reprobado">Reprobado</option></select>
+            </div>
+            <button class="btn-export" onclick="exportTableToCSV('tblGrades','calificaciones_finales.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar</button>
+        </div>
+        <div class="record-count" id="tblGradesCount">Mostrando 1 a @Model.RecentFinalGrades.Count de @Model.RecentFinalGrades.Count registros</div>
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="tblGrades">
+                <thead><tr><th>Alumno</th><th>Matrícula</th><th>Materia</th><th>Docente</th><th style="text-align:center;">Calif.</th><th style="text-align:center;">Estatus</th><th>Periodo</th></tr></thead>
+                <tbody>
+                    @foreach (var g in Model.RecentFinalGrades)
+                    {
+                        var sc = g.PassStatus == "Aprobado" ? "badge-success" : "badge-danger";
+                        var gc = g.FinalValue >= 9 ? "badge-success" : g.FinalValue >= 8 ? "badge-accent" : g.FinalValue >= 7 ? "badge-warning" : "badge-danger";
+                        <tr><td style="font-weight:500;color:var(--text-primary);">@g.StudentName</td><td style="font-size:12px;color:var(--text-muted);">@g.Matricula</td><td>@g.SubjectName</td><td style="font-size:12px;">@g.TeacherName</td><td style="text-align:center;"><span class="badge @gc">@g.FinalValue.ToString("0.0")</span></td><td style="text-align:center;"><span class="badge @sc">@g.PassStatus</span></td><td style="font-size:12px;color:var(--text-muted);">@g.PeriodName</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<!-- Table 7: Oportunidades (Retakes) -->
+@if (Model.RecentOpportunities.Any())
+{
+    <div class="section-title"><svg viewBox="0 0 24 24" style="stroke:var(--warning);"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg> <span style="color:var(--warning);">Oportunidades Extraordinarias</span></div>
+    <div class="chart-box" style="border-left:3px solid var(--warning);">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:10px;"><button class="btn-export" onclick="exportTableToCSV('tblOpp','oportunidades.csv')"><svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exportar</button></div>
+        <div style="overflow-x:auto;">
+            <table class="data-table" id="tblOpp">
+                <thead><tr><th>Alumno</th><th>Materia</th><th style="text-align:center;">Tipo</th><th style="text-align:center;">Calif. Original</th><th style="text-align:center;">Calif. Oportunidad</th><th style="text-align:center;">Máx. Perm.</th><th>Notas</th></tr></thead>
+                <tbody>
+                    @foreach (var o in Model.RecentOpportunities)
+                    {
+                        var oc = o.OpportunityGrade >= 7 ? "badge-success" : "badge-danger";
+                        <tr><td style="font-weight:500;color:var(--text-primary);">@o.StudentName</td><td>@o.SubjectName</td><td style="text-align:center;"><span class="badge badge-warning">@o.Type</span></td><td style="text-align:center;"><span class="badge badge-danger">@o.OriginalGrade.ToString("0.0")</span></td><td style="text-align:center;"><span class="badge @oc">@o.OpportunityGrade.ToString("0.0")</span></td><td style="text-align:center;"><span class="badge badge-neutral">@(o.MaxAllowed.HasValue? o.MaxAllowed.Value.ToString("0.0") : "—")</span></td><td style="font-size:12px;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@(string.IsNullOrEmpty(o.Notes) ? "—" : o.Notes)</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script>
+        Chart.register(ChartDataLabels);
+        Chart.defaults.color = '#8a9e95'; Chart.defaults.borderColor = 'rgba(0,0,0,0.06)'; Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif"; Chart.defaults.font.size = 12;
+        var dlBar = { anchor:'end', align:'top', color:'#1a2b25', font:{weight:'700',size:13}, offset:2 };
+        var dlDonut = { color:'#fff', font:{weight:'700',size:14}, formatter:function(v,ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b},0);var p=t>0?Math.round(v/t*100):0;return p>5?p+'%':'';} };
+
+        @if (Model.GradeDistribution.Any())
+        {
+            <text>
+            new Chart(document.getElementById('chartDist'),{type:'bar',data:{labels:[@Html.Raw(string.Join(",", Model.GradeDistribution.Select(g => $"'{g.Range}'")))],datasets:[{data:[@string.Join(",", Model.GradeDistribution.Select(g => g.Count))],backgroundColor:['#10b981','#22c3a6','#f0b429','#fb923c','#ef4444'],borderRadius:4,borderSkipped:false,maxBarThickness:55}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},datalabels:dlBar},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.06)'},ticks:{precision:0}}}}});
+            </text>
+        }
+
+        @if (Model.ByPassStatus.Any())
+        {
+            <text>
+            new Chart(document.getElementById('chartPass'),{type:'doughnut',data:{labels:[@Html.Raw(string.Join(",", Model.ByPassStatus.Select(s => $"'{s.Status}'")))],datasets:[{data:[@string.Join(",", Model.ByPassStatus.Select(s => s.Count))],backgroundColor:['#10b981','#ef4444'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{padding:14,usePointStyle:true,pointStyle:'rectRounded',font:{size:11}}},datalabels:dlDonut}}});
+            </text>
+        }
+
+        function filterTableByColumn(value,tableId,colIndex){var table=document.getElementById(tableId);if(!table)return;if(!window._filters)window._filters={};if(!window._filters[tableId])window._filters[tableId]={};if(value){window._filters[tableId][colIndex]=value;}else{delete window._filters[tableId][colIndex];}var rows=table.querySelectorAll('tbody tr');var visible=0;rows.forEach(function(row){var show=true;for(var ci in window._filters[tableId]){var fv=window._filters[tableId][ci];var cell=row.cells[parseInt(ci)];if(cell&&cell.textContent.trim().indexOf(fv)===-1){show=false;break;}}row.style.display=show?'':'none';if(show)visible++;});var el=document.getElementById(tableId+'Count');if(el)el.textContent='Mostrando 1 a '+visible+' de '+rows.length+' registros';}
+        function exportTableToCSV(tid,fn){var t=document.getElementById(tid);var r=t.querySelectorAll('tr');var c=[];r.forEach(function(row){if(row.style.display==='none')return;var cols=row.querySelectorAll('th,td');var d=[];cols.forEach(function(col){d.push('"'+col.textContent.trim().replace(/\n/g,' ').replace(/"/g,'""')+'"');});c.push(d.join(','));});var b=new Blob(['\uFEFF'+c.join('\n')],{type:'text/csv;charset=utf-8;'});var l=document.createElement('a');l.href=URL.createObjectURL(b);l.download=fn;l.click();}
+    </script>
+}

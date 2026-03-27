@@ -71,12 +71,6 @@
         public int Count { get; set; }
     }
 
-    public class PromedioRangeItem
-    {
-        public string Range { get; set; } = string.Empty;
-        public int Count { get; set; }
-    }
-
     public class PreinscripcionDetailItem
     {
         public string Folio { get; set; } = string.Empty;

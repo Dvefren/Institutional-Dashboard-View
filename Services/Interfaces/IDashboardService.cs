@@ -10,5 +10,6 @@ namespace UTTN.Dashboard.Services.Interfaces
         Task<AspirantesViewModel> GetAspirantesDataAsync(int? year = null, int? cuatrimestre = null);
         Task<MedicalViewModel> GetMedicalDataAsync(int? year = null, int? cuatrimestre = null);
         Task<VinculacionViewModel> GetVinculacionDataAsync(int? year = null, int? cuatrimestre = null);
+        Task<AcademicQualityViewModel> GetAcademicQualityDataAsync(int? year = null, int? cuatrimestre = null);
     }
 }

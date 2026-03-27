@@ -23,45 +23,32 @@ namespace UTTN.Dashboard.Controllers
                 // ═══════════════════════════════════════
                 // ROW COUNTS FOR EVERY TABLE
                 // ═══════════════════════════════════════
-                var tables = new[]
+                var tables = new List<string>
                 {
-                    "management_person_table",
-                    "management_user_table",
-                    "management_role_table",
-                    "management_permission_table",
-                    "management_rolepermission_table",
-                    "management_userrole_table",
-                    "management_career_table",
-                    "management_group_table",
-                    "management_student_table",
-                    "management_teacher_table",
-                    "management_usercareer_table",
-                    "management_studentcareer_history_table",
-                    "management_studentgroup_history_table",
-                    "Preinscripciones",
-                    "PreinscripcionDatosPersonales",
-                    "PreinscripcionDomicilio",
-                    "PreinscripcionEscolar",
-                    "PreinscripcionSalud",
-                    "PreinscripcionTutor",
-                    "PreinscripcionOtros",
-                    "Inscripciones",
-                    "Aspirantes",
-                    "AspiranteDatosGenerales",
-                    "AspiranteDomicilio",
-                    "AspiranteEscolar",
-                    "AspiranteOtros",
-                    "AspiranteTutor",
-                    "CE_TramitesCategoria",
-                    "CE_TramitesRequisitos",
-                    "CE_TramitesSolicitud",
-                    "CE_TramitesDetalleDocumentos",
-                    "Visitas",
-                    "VisitasPsicologicas",
-                    "operational_organization_table",
-                    "operational_program_table",
-                    "operational_studentassignment_table",
-                    "operational_document_table"
+                    // Management
+                    "management_person_table", "management_user_table", "management_role_table",
+                    "management_permission_table", "management_rolepermission_table", "management_userrole_table",
+                    "management_career_table", "management_group_table", "management_student_table",
+                    "management_teacher_table", "management_usercareer_table",
+                    "management_studentcareer_history_table", "management_studentgroup_history_table",
+                    // Academic Control (NEW)
+                    "academiccontrol_preinscription_table", "academiccontrol_preinscription_personaldata_table",
+                    "academiccontrol_preinscription_address_table", "academiccontrol_preinscription_health_table",
+                    "academiccontrol_preinscription_academic_table", "academiccontrol_preinscription_tutor_table",
+                    "academiccontrol_inscription_table", "academiccontrol_inscription_period_table",
+                    "academiccontrol_inscription_ticketconfig_table",
+                    // Grades (NEW)
+                    "grades_period_table", "grades_subject_table", "grades_teachersubject_table",
+                    "grades_evaluationcriteria_table", "grades_graderecord_table",
+                    "grades_finalgrade_table", "grades_opportunity_table",
+                    // Tramites
+                    "CE_TramitesCategoria", "CE_TramitesRequisitos",
+                    "CE_TramitesSolicitud", "CE_TramitesDetalleDocumentos",
+                    // Medical
+                    "Visitas", "VisitasPsicologicas",
+                    // Operational
+                    "operational_organization_table", "operational_program_table",
+                    "operational_studentassignment_table", "operational_document_table"
                 };
 
                 var counts = new Dictionary<string, int>();
